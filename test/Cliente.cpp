@@ -7,6 +7,29 @@ using namespace std;
 
 const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
 
+//-------------------------------------------------------------
+// Obtiene coordenadas
+//Para pruebas
+void obtenerCoord(string message, string p[]) {
+	int j=-1;
+	int cont=0;
+	int aux;
+	for (int i=0; i<message.length(); i++){
+		if (message[i]== ' '){
+			aux=j+1;
+		 	j=i;
+			p[cont]=message.substr(aux, j-aux);
+			cont++;
+		}
+		else if (i==(message.length())-1){
+			aux=j+1;
+		 	j=i+1;
+			p[cont]=message.substr(aux, j-aux);
+		}
+	}		
+}
+
+
 int main(int argc, char *argv[]) {
     const string MENS_FIN("Fin");
     // DirecciÃ³n y nÃºmero donde escucha el proceso servidor
@@ -72,9 +95,22 @@ int main(int argc, char *argv[]) {
 	}
 	// Recibimos la respuesta del servidor  
  	 read_bytes = socket.Recv(socket_fd, buffer, MESSAGE_SIZE);
-	// PARA TESTEAR:
-	cout << "Mensaje enviado: '" << mensaje << "'" << endl;
-	cout << "Mensaje recibido: " << buffer << endl;
+	if(mensaje=="Fin") {
+		cout << buffer << endl;
+		int error_code = socket.Close(socket_fd);
+    		if(error_code == -1){
+			cerr << "Error cerrando el socket: " << strerror(errno) << endl;
+   		 }
+	return error_code;
+	}
+	else {
+		string coord[2];
+		obtenerCoord(buffer, coord);
+		string ABRIRURL="gnome-open https://www.google.com/maps/place/"+coord[0]+","+coord[1];
+		system((ABRIRURL).data());
+	}
+
+
 
 /*Finalización
 **************************************************************************/
@@ -89,15 +125,10 @@ int main(int argc, char *argv[]) {
 	}
 	// Recibimos la respuesta del servidor  
  	read_bytes = socket.Recv(socket_fd, buffer, MESSAGE_SIZE);
-
-	// Mostramos la respuesta
-	cout << "Mensaje enviado: '" << mensaje << "'" << endl;
-	cout << "Mensaje recibido: " << buffer << endl;
-
-
-    // Cerramos el socket
-    int error_code = socket.Close(socket_fd);
-    if(error_code == -1){
+	cout << buffer << endl;
+   	// Cerramos el socket
+   	int error_code = socket.Close(socket_fd);
+    	if(error_code == -1){
 		cerr << "Error cerrando el socket: " << strerror(errno) << endl;
     }
 

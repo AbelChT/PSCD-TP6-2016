@@ -8,7 +8,7 @@ const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
 
 //-------------------------------------------------------------
 // Trocea y formatea el mensaje
-//SIN TERMINAR
+//Para pruebas
 void troceaFormatea(string message, string p[]) {
 	int j=-1;
 	int cont=0;
@@ -72,9 +72,31 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 		socket.Close(client_fd);
 		socket.Close(socket_fd);
 	}
-	cout << "Mensaje recibido: '" << buffer << "'" << endl;
-	// Enviamos la respuesta
-	resp = "Probando respuesta dos";
+	if (buffer=="Rest"){
+		string coordx="41.6834";
+		string coordy="-0.8874";
+		resp=coordx+" "+coordy;
+	}
+	else {
+		resp="Precio: 55";
+		send_bytes = socket.Send(client_fd, resp);
+		if(send_bytes == -1) {
+			cerr << "Error al enviar datos: " << strerror(errno) << endl;
+			// Cerramos los sockets
+			socket.Close(client_fd);
+			exit(1);
+		}
+		error_code = socket.Close(client_fd);
+   		if(error_code == -1){
+    			cerr << "Error cerrando el socket del cliente: " << strerror(errno) << endl;
+    		}
+
+    		// Cerramos el socket del servidor
+    		error_code = socket.Close(socket_fd);
+   		if(error_code == -1){
+    			cerr << "Error cerrando el socket del servidor: " << strerror(errno) << endl;
+    		}
+	}
 	send_bytes = socket.Send(client_fd, resp);
 	if(send_bytes == -1) {
 		cerr << "Error al enviar datos: " << strerror(errno) << endl;
@@ -93,9 +115,8 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 		socket.Close(client_fd);
 		socket.Close(socket_fd);
 	}
-	cout << "Mensaje recibido: '" << buffer << "'" << endl;
+	resp="Precio: 55";
 	// Enviamos la respuesta
-	resp = "Probando respuesta tres";
 	send_bytes = socket.Send(client_fd, resp);
 	if(send_bytes == -1) {
 		cerr << "Error al enviar datos: " << strerror(errno) << endl;
@@ -104,11 +125,11 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 		exit(1);
 	}
 	// Cerramos el socket del cliente
-    error_code = socket.Close(client_fd);
-    if(error_code == -1){
-    	cerr << "Error cerrando el socket del cliente: " << strerror(errno) << endl;
-    }
-     return error_code;
+   	error_code = socket.Close(client_fd);
+   	if(error_code == -1){
+    		cerr << "Error cerrando el socket del cliente: " << strerror(errno) << endl;
+   	}
+   	return error_code;
 }
 
 //-------------------------------------------------------------
