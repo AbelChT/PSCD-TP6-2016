@@ -7,6 +7,25 @@ using namespace std;
 
 const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
 
+
+
+
+void gen_random(string &msg) {
+    srand(time(NULL));
+    int len=3;
+    char s[len];
+    static const char alpha[] =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alpha[rand() % (sizeof(alpha) - 1)];
+    }
+    s[len] = 0;
+    msg=s;
+}
+
+
 //-------------------------------------------------------------
 // Obtiene coordenadas
 //Para pruebas
@@ -29,6 +48,26 @@ void obtenerCoord(string message, string p[]) {
 	}		
 }
 
+
+
+void enviarMensaje (int socket_fd, string mensaje, Socket socket){
+	int send_bytes = socket.Send(socket_fd, mensaje);
+	if(send_bytes == -1){
+		cerr << "Error al enviar datos: " << strerror(errno) << endl;
+		// Cerramos el socket
+		socket.Close(socket_fd);
+		exit(1);
+	}
+}
+
+void recibirMensaje (int socket_fd, string &respuesta, Socket socket){
+	int read_bytes = socket.Recv(socket_fd, respuesta, MESSAGE_SIZE);
+	if(read_bytes == -1) {
+		cerr << "Error al recibir datos: " << strerror(errno) << endl;
+		// Cerramos los sockets
+		socket.Close(socket_fd);
+	}
+}
 
 int main(int argc, char *argv[]) {
     const string MENS_FIN("Fin");
@@ -60,23 +99,31 @@ int main(int argc, char *argv[]) {
 
 /*Solicitud inicial
 **********************************************************************/
-    string mensaje;
+    string mensaje, buffer;
    // Leer mensaje de la entrada estandar
 	cout << "Inserte hasta cinco parametros de busqueda: ";
 	getline(cin, mensaje);
-	// Enviamos el mensaje
-	   int send_bytes = socket.Send(socket_fd, mensaje);
-	   if(send_bytes == -1){
-		cerr << "Error al enviar datos: " << strerror(errno) << endl;
-		// Cerramos el socket
-		socket.Close(socket_fd);
-		exit(1);
+	//gen_random(mensaje);
+	//Comprobar el mensaje a enviar
+	//cout << mensaje << endl;
+	enviarMensaje(socket_fd, mensaje, socket);   
+	recibirMensaje(socket_fd, buffer, socket);
+	while (buffer=="Servicio denegado") {
+		cout << buffer << endl;
+		cout << "Inserte hasta cinco parametros de busqueda: ";
+		getline(cin, mensaje);
+		sleep(5);
+		enviarMensaje(socket_fd, mensaje, socket);   
+		recibirMensaje(socket_fd, buffer, socket);
 	}
-	  // Buffer para almacenar la respuesta
- 	string buffer;
-	// Recibimos la respuesta del servidor  
- 	int read_bytes = socket.Recv(socket_fd, buffer, MESSAGE_SIZE);
-	if (buffer=="Servicio denegado"||buffer=="Nada encontrado") cout << buffer << endl;
+	if (buffer=="Nada encontrado") {
+		cout << buffer << endl;
+		int error_code = socket.Close(socket_fd);
+    		if(error_code == -1){
+			cerr << "Error cerrando el socket: " << strerror(errno) << endl;
+    		}
+   		 return error_code;
+	}
 	else {
 		string ABRIRURL="gnome-open "+ buffer;
 		system((ABRIRURL).data());
@@ -86,16 +133,9 @@ int main(int argc, char *argv[]) {
 *************************************************************************/
 	cout << "Finalizar ('Fin') o mostrar restaurante ('Rest'): " << endl;
 	getline(cin, mensaje);
-	send_bytes = socket.Send(socket_fd, mensaje);
-	if(send_bytes == -1){
-		cerr << "Error al enviar datos: " << strerror(errno) << endl;
-		// Cerramos el socket
-		socket.Close(socket_fd);
-		exit(1);
-	}
-	// Recibimos la respuesta del servidor  
- 	 read_bytes = socket.Recv(socket_fd, buffer, MESSAGE_SIZE);
-	if(mensaje=="Fin") {
+	enviarMensaje(socket_fd, mensaje, socket);
+	recibirMensaje(socket_fd, buffer, socket);
+	if(mensaje==MENS_FIN) {
 		cout << buffer << endl;
 		int error_code = socket.Close(socket_fd);
     		if(error_code == -1){
@@ -116,15 +156,8 @@ int main(int argc, char *argv[]) {
 **************************************************************************/
 	cout << "Finalizar ('Fin'): " << endl;
 	getline(cin, mensaje);
-	send_bytes = socket.Send(socket_fd, mensaje);
-	 if(send_bytes == -1){
-		cerr << "Error al enviar datos: " << strerror(errno) << endl;
-		// Cerramos el socket
-		socket.Close(socket_fd);
-		exit(1);
-	}
-	// Recibimos la respuesta del servidor  
- 	read_bytes = socket.Recv(socket_fd, buffer, MESSAGE_SIZE);
+	enviarMensaje(socket_fd, mensaje, socket);
+	recibirMensaje(socket_fd, buffer, socket);
 	cout << buffer << endl;
    	// Cerramos el socket
    	int error_code = socket.Close(socket_fd);

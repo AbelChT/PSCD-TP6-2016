@@ -1,19 +1,6 @@
-WORK IN PROGRESS
+Servidor.cpp
+Cliente.cpp
+Socket.h
+Socket.cpp
 
-Aquí van aprox 4 horas de trabajo, entre el viernes 24 (10-12) y sábado 25 (17-19)
-
-De momento solo se puede hacer que el cliente envíe en un primer mensaje hasta 5 palabras (términos), 
-el servidor separa el mensaje por palabras y si la primera es "Nada" o "Denegar" simplemente devuelve un mensaje,
-si se introduce otra palabra se devuelve una URL que el cliente abre.
-
-Algunas cosas importantes por hacer:
-	-El número de clientes con el que se opera a la vez está limitado (10 por defecto), ¿habría que tratar de hacer que fuera ilimitado?
-	-Si al cliente se le llegan los mensajes de denegación/no se ha encontrado información actúe en consecuencia.
-	-Trabajo con segundo y tercer mensaje
-	-Incluir mensajes, información (URL, coord,...) definitivos (¿Más adelante?)
-	-Terminación adecuada
-
-
-He estado compilando y ejecutando en hendrix con putty y Xming (para que se abra el navegador) y aparentemente lo poco que hay funciona correctamente.
-He usado el makefile que dieron para la práctica 5 y sus Socket.cpp y Socket.h
-
+Compilar mediante makefile asociado
