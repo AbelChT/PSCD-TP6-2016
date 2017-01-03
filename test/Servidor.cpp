@@ -1,14 +1,12 @@
 #include <iostream>
 #include "Socket.h"
 #include <thread>
-//#include "../../../src/servidor/DbMonumentosRestaurantes/DbMonumentosRestaurantes.h"
+
 using namespace std;
 
-const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
-int Nthreads=0; //Número de threads activos
-bool loop=true; //Control de finalización
-Lista<Monumento> listm;
-Lista<Restaurante> listr;
+const int MESSAGE_SIZE = 4001; //Tama�o m�ximo del mensaje (MODIFICABLE)
+int Nthreads=0; //N�mero de threads activos
+bool loop=true; //Control de finalizaci�n
 
 //-------------------------------------------------------------
 // Trocea y formatea el mensaje
@@ -29,7 +27,7 @@ void troceaFormatea(string message, string p[]) {
 		 	j=i+1;
 			p[cont]=message.substr(aux, j-aux);
 		}
-	}
+	}		
 }
 
 
@@ -58,7 +56,7 @@ void recibirMensaje (int client_fd, string &buffer, Socket socket){
 
 
 //---------------------------------------------------------------
-//Función que utilizan los thread
+//Funci�n que utilizan los thread
 
 int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 	char MENS_FIN[]="Fin";
@@ -69,14 +67,10 @@ while (buffer!=MENS_FIN){
 /*Primer mensaje
 ******************************************************/
 	recibirMensaje (client_fd, buffer, socket);
-	//Pruebas análisis de mensaje y respuesta en consecuencia
+	//Pruebas an�lisis de mensaje y respuesta en consecuencia
 	string p[5];
 	troceaFormatea(buffer, p);
-	for (int n=0; n<5; ++n){
-		 if (p[n].length()!=0){
-			  prueba.buscarMonumento(p[n],listm);
-		 }
-	 }
+	for (int n=0; n<5; ++n) if (p[n].length()!=0) cout << p[n] << endl;
 	while (p[0]=="Denegar"){
 		resp="Servicio denegado";
 		enviarMensaje (client_fd, resp, socket);
@@ -92,19 +86,16 @@ while (buffer!=MENS_FIN){
 	else{
 	resp="http://www.zaragoza.es/ciudad/artepublico/detalle_ArtePublico?id=145";
 	enviarMensaje (client_fd, resp, socket);
-
+	
 /*Segundo mensaje
 ******************************************************/
 	recibirMensaje (client_fd, buffer, socket);
-	//Devuelve 0-4 (índice) del monumento?
 	if (buffer=="Rest"){
-		prueba.buscarRestaurante(Monumento monumento_seleccionado, listr);
 		string coordx="41.6834";
 		string coordy="-0.8874";
 		resp=coordx+" "+coordy;
 	}
 	else {
-		//Generar precio
 		resp="Precio: 55";
 		enviarMensaje (client_fd, resp, socket);
 		Nthreads--;
@@ -116,7 +107,6 @@ while (buffer!=MENS_FIN){
 ******************************************************/
 	recibirMensaje (client_fd, buffer, socket);
 	if (buffer==MENS_FIN){
-		//Generar precio
 		resp="Precio: 55";
 		enviarMensaje (client_fd, resp, socket);
 		Nthreads--;
@@ -146,13 +136,12 @@ void finalizar(){
 
 //-------------------------------------------------------------
 int main(int argc, char *argv[]) {
-	DbMonumentosRestaurantes prueba(5,5);
 	// Puerto donde escucha el proceso servidor
     	int SERVER_PORT = atoi(argv[1]);
-	// CreaciÃ³n del socket con el que se llevarÃ¡ a cabo
-	// la comunicaciÃ³n con el servidor.
+	// Creación del socket con el que se llevará a cabo
+	// la comunicación con el servidor.
 	Socket socket(SERVER_PORT);
-	// Bind
+	// Bind 
 	int socket_fd =socket.Bind();
 	if (socket_fd == -1) {
 		cerr << "Error en el bind: " << strerror(errno) << endl;
@@ -167,7 +156,7 @@ int main(int argc, char *argv[]) {
 		socket.Close(socket_fd);
 		exit(1);
 	}
-	//Prueba para tratar con un número limitado de clientes simultáneamente
+	//Prueba para tratar con un n�mero limitado de clientes simult�neamente
 	thread finalizador(&finalizar);
 	while(loop){
 		// Accept

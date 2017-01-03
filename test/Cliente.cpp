@@ -5,7 +5,7 @@
 
 using namespace std;
 
-const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
+const int MESSAGE_SIZE = 4001; //Tama�o m�ximo del mensaje (MODIFICABLE)
 
 
 
@@ -71,18 +71,18 @@ void recibirMensaje (int socket_fd, string &respuesta, Socket socket){
 int main(int argc, char *argv[]) {
     while(1){
         const string MENS_FIN("Fin");
-        // DirecciÃ³n y nÃºmero donde escucha el proceso servidor
+        // Dirección y número donde escucha el proceso servidor
         string SERVER_ADDRESS = argv[1];
         int SERVER_PORT = atoi(argv[2]);
-        // Creación del socket con el que se llevará a cabo
-        // la comunicación con el servidor.
+        // Creaci�n del socket con el que se llevar� a cabo
+        // la comunicaci�n con el servidor.
         Socket socket(SERVER_ADDRESS, SERVER_PORT);
         // Conectamos con el servidor. Probamos varias conexiones
         const int MAX_ATTEMPS = 10;
         int count = 0;
         int socket_fd;
         do {
-            // ConexiÃ³n con el servidor
+            // Conexión con el servidor
             socket_fd = socket.Connect();
             count++;
 
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
             }
         } while(socket_fd == -1 && count < MAX_ATTEMPS);
 
-        // Chequeamos si se ha realizado la conexiÃ³n
+        // Chequeamos si se ha realizado la conexión
         if(socket_fd == -1){
             return socket_fd;
         }
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
             else {
                 string ABRIRURL="gnome-open "+ buffer;
                 system((ABRIRURL).data());
-
+                
 /*Fin o restaurante
 *************************************************************************/
                 cout << "Finalizar ('Fin') o mostrar restaurante ('Rest'): " << endl;
@@ -141,8 +141,8 @@ int main(int argc, char *argv[]) {
                     string ABRIRURL="gnome-open https://www.google.com/maps/place/"+coord[0]+","+coord[1];
                     system((ABRIRURL).data());
                 }
-
-/*Finalización o realizar otro pedida
+                
+/*Finalizaci�n o realizar otro pedida
 **************************************************************************/
                 cout << "Finalizar ('Fin') o continuar ('Otro'): " << endl;
                 getline(cin, mensaje);
@@ -160,3 +160,4 @@ int main(int argc, char *argv[]) {
             }
 	//return error_code;
 }
+

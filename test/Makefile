@@ -2,7 +2,7 @@
 # File:   Makefile
 # Author: PSCD-Unizar
 # Date:   noviembre 2015
-# Coms:   Genera sockets, cliente y servidor para la prÃ¡ctica 5
+# Coms:   Genera sockets, cliente y servidor para la práctica 5
 #         Ejecutar como "make"
 #         Para compilar en Hendrix (Solaris OS), descomentar
 #         "#${SOCKETSFLAGS}"
@@ -14,10 +14,10 @@
 RM = rm -f # Comando de limpieza
 CC = g++ # Comando de compilacion
 
-# ######################## #
+# ######################## # 
 # VARIABLES GLOBALES       #
 # Definimos:               #
-#   * LibrerÃ­a de sockets  #
+#   * Librería de sockets  # 
 #   * Cliente              #
 #   * Servidor             #
 #   * ServidorMulticliente #
@@ -49,5 +49,21 @@ ${CLIENT}.o: ${CLIENT}.cpp
 	${CC} -c ${CPPFLAGS} ${CLIENT}.cpp
 
 # Linkado
-${CLIENT}: ${SOCKET}.o ${CLIENT}.o
-	${CC} ${LDFLAGS} ${SOCKET}.o ${CLIENT}.o -o ${CLIENT} ${SOCKETSFLAGS}
+${CLIENT}: ${SOCKET}.o ${CLIENT}.o  
+	${CC} ${LDFLAGS} ${SOCKET}.o ${CLIENT}.o -o ${CLIENT} ${SOCKETSFLAGS} 
+#-----------------------------------------------------------
+# SERVIDOR
+# Compilacion
+${SERVER}.o: ${SERVER}.cpp 
+	${CC} -c ${CPPFLAGS} ${SERVER}.cpp
+
+# Linkado
+${SERVER}: ${SOCKET}.o ${SERVER}.o
+	${CC} ${LDFLAGS} ${SOCKET}.o ${SERVER}.o -o ${SERVER} ${SOCKETSFLAGS} 
+#-----------------------------------------------------------
+
+# LIMPIEZA
+clean:
+	$(RM) ${SOCKET}.o
+	$(RM) ${CLIENT} ${CLIENT}.o
+	$(RM) ${SERVER} ${SERVER}.o
