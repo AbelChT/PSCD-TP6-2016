@@ -6,42 +6,29 @@
 #ifndef DBMONUMENTOSRESTAURANTES_H
 #define DBMONUMENTOSRESTAURANTES_H
 
-#include "json.hpp"
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <mutex>
 
-/*
-* Maximo número de monumentos que se devolverá en la lista
-*/
-#define MAX_NUM_MONUMENTOS_DEVOLVER 5
+#include "../../librerias/JsonConverter/json.hpp"
+#include "../../librerias/JsonDownload/JsonDownload.h"
+#include "../../librerias/Monumento/monumento.h"
+#include "../../librerias/Restaurante/restaurante.h"
+#include "../../librerias/Lista/Lista.h"
+#include "../../librerias/SuffixTree/SuffixTree.h"
 
-/*
-* Maximo número de restaurantes que se devolverá en la lista
-*/
-#define MAX_NUM_RESTAURANTES_DEVOLVER 5
 
-/*
-* Estructura de datos donde se almacenan los monumentos
-*/
-SuffixTree<*Monumento> dbMonumentos(MAX_NUM_MONUMENTOS_DEVOLVER);
 
-/*
-* Estructura de datos donde se almacenan los restaurantes
-*/
-Lista<Restaurante> dbRestaurantes;
-
-/*
-* Mutex utilizado para garantizar que la operación buscarRestaurante se pueda
-* invocar desde multiples threads
-*/
-mutex mtx_buscarRestaurante;
-
-/*
-* Descarga los monumentos y restaurantes proporcionados por el ayuntamiento de
+class DbMonumentosRestaurantes {
+public:
+    /*
+     * Pre: MAX_NUM_MONUMENTOS_DEVOLVER > 0 y MAX_NUM_RESTAURANTES_DEVOLVER > 0
+* Post: Descarga los monumentos y restaurantes proporcionados por el ayuntamiento de
 * zaragoza y los carga en las estructuras correspondientes
+     *
 */
-void cargarMonumentosRestaurantes();
+    DbMonumentosRestaurantes(int MAX_NUM_MONUMENTOS_DEVOLVER,int MAX_NUM_RESTAURANTES_DEVOLVER);
 
 /*
 * Pre: Se han cargado los monumentos
@@ -49,7 +36,7 @@ void cargarMonumentosRestaurantes();
 *       devuelve un máximo de MAX_NUM_MONUMENTOS_DEVOLVER monumentos en los que
 *       existan coincidencias con dato_a_buscar
 */
-void buscarMonumento(string dato_a_buscar, Pila<Monumento> resultados);
+    void buscarMonumento(string dato_a_buscar, Lista<Monumento> &resultados);
 
 /*
 * Pre: Se han cargado los monumentos
@@ -58,6 +45,41 @@ void buscarMonumento(string dato_a_buscar, Pila<Monumento> resultados);
 *       en dbRestaurantes
 *       En caso contrario devuelve todos los restaurantes almacenados en dbRestaurantes
 */
-void buscarRestaurante(Monumento monumento_seleccionado, Pila<Restautante> resultados);
+    void buscarRestaurante(Monumento monumento_seleccionado, Lista<Restaurante> &resultados);
+
+private:
+    /*
+* Función auxiliar utilizada para calcular la distancia entre un restaurante y un
+* monumento
+* Devuelve el cuadrado de la distancia de "a" a "b"
+*/
+    double calcular_distancia(Restaurante& a , Monumento& b);
+    /*
+* Maximo número de monumentos que se devolverá en la lista
+*/
+ int MAX_NUM_MONUMENTOS_DEVOLVER;
+
+/*
+* Maximo número de restaurantes que se devolverá en la lista
+*/
+ int MAX_NUM_RESTAURANTES_DEVOLVER;
+
+    /*
+* Estructura de datos donde se almacenan los monumentos
+*/
+    SuffixTree<Monumento *>* dbMonumentos;
+
+/*
+* Estructura de datos donde se almacenan los restaurantes
+*/
+    Lista<Restaurante> dbRestaurantes;
+
+/*
+* Mutex utilizado para garantizar que la operación buscarRestaurante se pueda
+* invocar desde multiples threads
+*/
+    mutex mtx_buscarRestaurante;
+
+};
 
 #endif

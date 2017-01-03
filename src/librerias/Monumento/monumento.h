@@ -6,6 +6,9 @@
 #ifndef MONUMENTO_H
 #define MONUMENTO_H
 
+#include <string>
+
+using namespace std;
 /*
 * TAD que representa un monumento
 */

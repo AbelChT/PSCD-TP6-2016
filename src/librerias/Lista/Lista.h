@@ -79,9 +79,10 @@ public:
 private:
     struct Nodo{
         Dato dato;
-        Nodo* anterior;
+        Nodo* siguiente;
     };
-    Nodo* cima;
+    Nodo* primero;
+    Nodo* ultimo;
     Nodo* iterador;
     unsigned int dim;
 
@@ -94,9 +95,10 @@ private:
 */
 template<typename Dato>
 Lista<Dato>::Lista() {
-    this->cima = nullptr;
+    this->primero = nullptr;
+    this->ultimo = nullptr;
     this->dim = 0;
-    this->iterador = this->cima;
+    this->iterador = nullptr;
 }
 
 /*
@@ -106,11 +108,11 @@ Lista<Dato>::Lista() {
 template<typename Dato>
 Lista<Dato>::~Lista() {
     while (this->dim > 0) {
-        typename Lista<Dato>::Nodo *aux = this->cima->anterior;
-        delete this->cima;
-        this->cima = aux;
+        typename Lista<Dato>::Nodo *aux = this->primero->siguiente;
+        delete this->primero;
+        this->primero = aux;
         aux = nullptr;
-        --this->dim;
+        this->dim=this->dim-1;
     }
 }
 
@@ -121,12 +123,14 @@ Lista<Dato>::~Lista() {
 template<typename Dato>
 void Lista<Dato>::clear() {
     while (this->dim > 0) {
-        typename Lista<Dato>::Nodo *aux = this->cima->anterior;
-        delete this->cima;
-        this->cima = aux;
+        typename Lista<Dato>::Nodo *aux = this->primero->siguiente;
+        delete this->primero;
+        this->primero = aux;
         aux = nullptr;
-        --this->dim;
+        this->dim=this->dim-1;
     }
+    this->ultimo = nullptr;
+    this->iterador = nullptr;
 }
 
 /*
@@ -135,12 +139,19 @@ void Lista<Dato>::clear() {
 */
 template<typename Dato>
 void Lista<Dato>::add(const Dato &d) {
-
-    typename Lista<Dato>::Nodo *aux = new (typename Lista<Dato>::Nodo);
-    aux->anterior = this->cima;
-    aux->dato = d;
-    this->cima = aux;
-    ++this->dim;
+    if(this->size()>0){
+        this->ultimo->siguiente = new typename Lista<Dato>::Nodo;
+        this->ultimo=this->ultimo->siguiente;
+        this->ultimo->dato=d;
+        this->ultimo->siguiente= nullptr;
+        this->dim=this->dim+1;
+    }else{
+        this->ultimo=new typename Lista<Dato>::Nodo;
+        this->primero=this->ultimo;
+        this->primero->siguiente= nullptr;
+        this->primero->dato=d;
+        this->dim=1;
+    }
 }
 
 /*
@@ -150,12 +161,12 @@ void Lista<Dato>::add(const Dato &d) {
 */
 template<typename Dato>
 bool Lista<Dato>::belongs(const Dato &d) {
-    typename Lista<Dato>::Nodo *aux = this->cima;
+    typename Lista<Dato>::Nodo *aux = this->primero;
     for (int i = 0; i < this->dim; ++i) {
         if (aux->dato == d) {
             return true;
         }
-        aux = aux->anterior;
+        aux = aux->siguiente;
     }
     return false;
 }
@@ -185,7 +196,7 @@ int Lista<Dato>::size() {
 */
 template<typename Dato>
 void Lista<Dato>::begin() {
-    this->iterador = this->cima;
+    this->iterador = this->primero;
 }
 
 /*
@@ -199,7 +210,7 @@ bool Lista<Dato>::next(Dato &d) {
         return false;
     } else {
         d = this->iterador->dato;
-        this->iterador = this->iterador->anterior;
+        this->iterador = this->iterador->siguiente;
         return true;
     }
 }
@@ -212,20 +223,25 @@ bool Lista<Dato>::next(Dato &d) {
 template<typename Dato>
 void Lista<Dato>::copy(Lista<Dato>& copied){
   copied.clear();
-  if(this.size>0){
-    typename Lista<Dato>::Nodo *aux = this->cima;
+  if(this->size()>0){
+    typename Lista<Dato>::Nodo *aux = this->primero;
+      /*
     typename Lista<Dato>::Nodo *cima_nueva_pila = new typename Lista<Dato>::Nodo;
     cima_nueva_pila->dato=aux->dato;
     typename Lista<Dato>::Nodo *nueva_lista_aux=cima_nueva_pila;
-    aux=aux->anterior;
+    aux=aux->siguiente;*/
+      copied.primero=new typename Lista<Dato>::Nodo;
+      copied.ultimo=copied.primero;
+      copied.ultimo->dato=aux->dato;
+      aux=aux->siguiente;
     while (aux!=nullptr) {
-      nueva_lista_aux->anterior = new typename Lista<Dato>::Nodo;
-      nueva_lista_aux=nueva_lista_aux->anterior;
-      nueva_lista_aux->dato=aux->dato;
-      aux=aux->anterior;
+        copied.ultimo->siguiente = new typename Lista<Dato>::Nodo;
+        copied.ultimo=copied.ultimo->siguiente;
+        copied.ultimo->dato=aux->dato;
+        aux=aux->siguiente;
     }
-    copied.cima=cima_nueva_pila;
-    copied.dim=this.size();
+    copied.ultimo->siguiente= nullptr;
+    copied.dim=this->size();
   }
 }
 

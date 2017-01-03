@@ -51,15 +51,12 @@ public:
     void search(const string sub_clave, Lista<Dato> &resultados);
 
 private:
-  /*
-  * Maximo número de datos que se devolverá en la lista
-  */
-  int MAX_NUM_DATOS_DEVOLVER;
 
   /*
   * Añade el par clave y valor al arbol de sufijos, tratando a este como si fuese
   * un trie
   */
+    unsigned int obtposletr(char letra);
     void addTrie(const string clave, const Dato &valor);
 
     struct Nodo{
@@ -70,12 +67,18 @@ private:
     //Cima del arbol de sufijos
     Nodo cima;
 
+    /*
+* Maximo número de datos que se devolverá en la lista
+*/
+    int MAX_NUM_DATOS_DEVOLVER;
+
 };
 
 /*
 * Transforma el caracter letra a un caracter que se pueda guardar en el trie
 */
-unsigned int obtener_pos_letra(char letra) {
+template<typename Dato>
+unsigned int SuffixTree<Dato>::obtposletr(char letra) {
     if(letra<='z'&&letra>='a'){//letras minúsculas
         return (unsigned int)(letra-'a');
     }
@@ -99,6 +102,9 @@ unsigned int obtener_pos_letra(char letra) {
     }
     else if(letra=='ñ'||letra=='Ñ'){
         return 'z'-'a'+1;
+    }
+    else if(letra>='0'&&letra<='9'){
+        return  letra-'0'+'z'-'a'+3;
     }
     else{
         return 'z'-'a' + 2;
@@ -133,10 +139,10 @@ void SuffixTree<Dato>::search(const string clave, Lista<Dato> &resultados) {
         bool estaContenido = true;
         while (estaContenido && (i < clave.length())){//encuentro el substring que me proporcionan
             letra_actual = clave.at(i);
-            if (nodo_actual->letra[obtener_pos_letra(letra_actual)] == nullptr) {
+            if (nodo_actual->letra[this->obtposletr(letra_actual)] == nullptr) {
                 estaContenido= false;
             } else {
-                nodo_actual = nodo_actual->letra[obtener_pos_letra(letra_actual)];
+                nodo_actual = nodo_actual->letra[this->obtposletr(letra_actual)];
             }
             ++i;
         }
@@ -156,15 +162,15 @@ void SuffixTree<Dato>::addTrie(string clave, const Dato &valor) {
         typename SuffixTree<Dato>::Nodo *nodo_actual = &(this->cima);
         for (int i = 0; i < clave.length(); i++) {
             char letra_actual = clave.at(i);
-            if (nodo_actual->letra[obtener_pos_letra(letra_actual)] == nullptr) {
-                nodo_actual->letra[obtener_pos_letra(letra_actual)] = new(typename SuffixTree<Dato>::Nodo);
+            if (nodo_actual->letra[this->obtposletr(letra_actual)] == nullptr) {
+                nodo_actual->letra[this->obtposletr(letra_actual)] = new(typename SuffixTree<Dato>::Nodo);
                 for (int j = 0; j < DIM_NUMERO_CARACTERES_RECONOCIDOS; j++) {//marco este nodo como una hoja
-                    nodo_actual->letra[obtener_pos_letra(letra_actual)]->letra[j] = nullptr;
+                    nodo_actual->letra[this->obtposletr(letra_actual)]->letra[j] = nullptr;
                 }
             }
-            nodo_actual = nodo_actual->letra[obtener_pos_letra(letra_actual)];
+            nodo_actual = nodo_actual->letra[this->obtposletr(letra_actual)];
 
-            if((nodo_actual->valores.size()<this.MAX_NUM_DATOS_DEVOLVER)&&!nodo_actual->valores.belongs(valor)){//añado el dato al nodo
+            if((nodo_actual->valores.size()<this->MAX_NUM_DATOS_DEVOLVER)&&!nodo_actual->valores.belongs(valor)){//añado el dato al nodo
                 nodo_actual->valores.add(valor);
             }
         }
@@ -174,7 +180,7 @@ void SuffixTree<Dato>::addTrie(string clave, const Dato &valor) {
 template<typename Dato>
 SuffixTree<Dato>::SuffixTree(int num_datos_devolver) {
 
-    this.MAX_NUM_DATOS_DEVOLVER=num_datos_devolver;
+    this->MAX_NUM_DATOS_DEVOLVER=num_datos_devolver;
     for (int i = 0; i < DIM_NUMERO_CARACTERES_RECONOCIDOS; i++) {//marco este nodo como una hoja
         this->cima.letra[i] = nullptr;
     }

@@ -6,6 +6,10 @@
 #ifndef RESTAURANTE_H
 #define RESTAURANTE_H
 
+#include <string>
+
+using namespace std;
+
 /*
 * TAD que representa un restaurante
 */
