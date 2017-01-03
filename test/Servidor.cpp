@@ -5,8 +5,8 @@
 using namespace std;
 
 const int MESSAGE_SIZE = 4001; //Tamaño máximo del mensaje (MODIFICABLE)
-const int Niteraciones = 3; //Número de iteraciones antes de que se cierre el servidor
 int Nthreads=0; //Número de threads activos
+bool loop=true; //Control de finalización
 
 //-------------------------------------------------------------
 // Trocea y formatea el mensaje
@@ -63,6 +63,7 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 	int length = 100;
 	string buffer;
 	string resp;
+while (buffer!=MENS_FIN){
 /*Primer mensaje
 ******************************************************/
 	recibirMensaje (client_fd, buffer, socket);
@@ -82,7 +83,8 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 		Nthreads--;
 		return 0;
 	}
-	else resp="http://www.zaragoza.es/ciudad/artepublico/detalle_ArtePublico?id=145";
+	else{
+	resp="http://www.zaragoza.es/ciudad/artepublico/detalle_ArtePublico?id=145";
 	enviarMensaje (client_fd, resp, socket);
 	
 /*Segundo mensaje
@@ -104,10 +106,20 @@ int auxiliar(int client_fd, int socket_fd, int error_code, Socket socket){
 /*Tercer mensaje
 ******************************************************/
 	recibirMensaje (client_fd, buffer, socket);
-	resp="Precio: 55";
-	enviarMensaje (client_fd, resp, socket);
-	Nthreads--;
-	return 0;
+	if (buffer==MENS_FIN){
+		resp="Precio: 55";
+		enviarMensaje (client_fd, resp, socket);
+		Nthreads--;
+		return 0;
+	}
+
+	else{
+		resp="Reiniciando representante";
+		 cout << resp << endl;
+		enviarMensaje (client_fd, resp, socket);
+	}
+}
+}
 }
 
 //ALERTA ESPERA ACTIVA!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -115,6 +127,12 @@ void controlar(){
 	while(Nthreads!=0) sleep(5);
 }
 
+void finalizar(){
+	string finalizar;
+	getline(cin, finalizar);
+	cout << "Cerrando servidores..." << endl;
+	loop=false;
+}
 
 //-------------------------------------------------------------
 int main(int argc, char *argv[]) {
@@ -139,8 +157,8 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	//Prueba para tratar con un número limitado de clientes simultáneamente
-	int cont=0;
-	while(cont<Niteraciones){
+	thread finalizador(&finalizar);
+	while(loop){
 		// Accept
 		int client_fd = socket.Accept();
 		if(client_fd == -1) {
@@ -152,9 +170,9 @@ int main(int argc, char *argv[]) {
 		Nthreads++;
 		thread operador(&auxiliar, client_fd, socket_fd, error_code, ref(socket));
     		operador.detach();
-	cont++;
 	}
     thread controlador(&controlar);
+    finalizador.join();
     controlador.join();
     cout << "Recaudacion total: 1500000." << endl;
     cout << "Otros datos: ...." << endl;
