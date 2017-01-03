@@ -1,60 +1,80 @@
-//
-// Created by Abel on 27/12/2016.
-//
+/******************************************************************
+* Author: Abel Chils Trabanco
+* Date:   2 de enero de 2017
+******************************************************************/
 
-#ifndef PRUEBASSTRUCTS_LISTA_H
-#define PRUEBASSTRUCTS_LISTA_H
+#ifndef LISTA_H
+#define LISTA_H
 
 /*
-* Los valores del TAD pila representan secuencias de elementos con
-* acceso LIFO (last in, first out), esto es, el último elemento añadido
-* será el primero en ser borrado.
+* Los valores del TAD lista representan una secuencias de elementos
 */
-template<typename Dato>
-class Lista {
+
+template<typename Dato> class Lista {
 public:
-    /*
-* Devuelve en pila la pila vacía, sin elementos
+/*
+* Pre: ---
+* Post: Crea una lista vacía, sin elementos
 */
     Lista();
 
-    /*
-* Devuelve en pila la pila vacía y además libera la memoria utilizada previamente por pila
+/*
+* Pre: ---
+* Post: Libera la memoria usada por la lista
 */
     ~Lista();
 
-    /*
-* Devuelve en pila la pila vacía y además libera la memoria utilizada previamente por pila
+/*
+* Pre: ---
+* Post: Devuelve una lista vacia y libera la memoria usada por la lista anterior
 */
-    void vaciar();
+    void clear();
 
-    /*
-* Devuelve en pila la pila resultante de añadir d a pila
+/*
+* Pre: ---
+* Post: Devuelve  la lista resultante de añadir d a lista
 */
-    void anyadir(const Dato& d);
+    void add(const Dato& d);
 
-    /*
-* Devuelve en pila la pila resultante de añadir d a pila
+/*
+* Pre: ---
+* Post: Devuelve cierto si y solo si d pertenece a la lista
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
 */
-     bool pertenece(const Dato& d);
+     bool belongs(const Dato& d);
 
-    /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+/*
+* Pre: ---
+* Post: Devuelve ciero en el caso de que no exista ningún elemento en la lista
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
 */
-    bool esVacia();
+    bool empty();
 
-    /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+/*
+* Pre: ---
+* Post: Devuelve el numero de elementos de la lista
 */
-    int tamanyo();
-    /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+    int size();
+
+/*
+* Pre: ---
+* Post: Pone el iterador de la lista al principio
 */
-    void iniciarIterador();
-    /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+    void begin();
+
+/*
+* Pre: Se ha ejecutado previamente begin
+* Post: Asigna el elemento apuntado por el iterador a d y avanza el iterador
+*       Devuelve ciero solo si no existen más elementos por visitar en la lista
 */
-    bool siguienteElemento(Dato& pila);
+    bool next(Dato& d);
+
+/*
+* Pre: ---
+* Post: Copia la lista en copied
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
+*/
+    void copy(Lista<Dato>& copied);
 
 private:
     struct Nodo{
@@ -63,66 +83,75 @@ private:
     };
     Nodo* cima;
     Nodo* iterador;
-    unsigned int size;
+    unsigned int dim;
 
 };
 
 
+/*
+* Pre: ---
+* Post: Crea una lista vacía, sin elementos
+*/
 template<typename Dato>
 Lista<Dato>::Lista() {
     this->cima = nullptr;
-    this->size = 0;
+    this->dim = 0;
     this->iterador = this->cima;
 }
 
 /*
-* Devuelve en pila la pila vacía y además libera la memoria utilizada previamente por pila
+* Pre: ---
+* Post: Libera la memoria usada por la lista
 */
 template<typename Dato>
 Lista<Dato>::~Lista() {
-    while (this->size > 0) {
+    while (this->dim > 0) {
         typename Lista<Dato>::Nodo *aux = this->cima->anterior;
         delete this->cima;
         this->cima = aux;
         aux = nullptr;
-        --this->size;
+        --this->dim;
     }
 }
 
 /*
-* Devuelve en pila la pila vacía y además libera la memoria utilizada previamente por pila
+* Pre: ---
+* Post: Devuelve una lista vacia y libera la memoria usada por la lista anterior
 */
 template<typename Dato>
-void Lista<Dato>::vaciar() {
-    while (this->size > 0) {
+void Lista<Dato>::clear() {
+    while (this->dim > 0) {
         typename Lista<Dato>::Nodo *aux = this->cima->anterior;
         delete this->cima;
         this->cima = aux;
         aux = nullptr;
-        --this->size;
+        --this->dim;
     }
 }
 
 /*
-* Devuelve en pila la pila resultante de añadir d a pila
+* Pre: ---
+* Post: Devuelve  la lista resultante de añadir d a lista
 */
 template<typename Dato>
-void Lista<Dato>::anyadir(const Dato &d) {
+void Lista<Dato>::add(const Dato &d) {
 
     typename Lista<Dato>::Nodo *aux = new (typename Lista<Dato>::Nodo);
     aux->anterior = this->cima;
     aux->dato = d;
     this->cima = aux;
-    ++this->size;
+    ++this->dim;
 }
 
 /*
-* Devuelve en pila la pila resultante de añadir d a pila
+* Pre: ---
+* Post: Devuelve cierto si y solo si d pertenece a la lista
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
 */
 template<typename Dato>
-bool Lista<Dato>::pertenece(const Dato &d) {
+bool Lista<Dato>::belongs(const Dato &d) {
     typename Lista<Dato>::Nodo *aux = this->cima;
-    for (int i = 0; i < this->size; ++i) {
+    for (int i = 0; i < this->dim; ++i) {
         if (aux->dato == d) {
             return true;
         }
@@ -132,34 +161,40 @@ bool Lista<Dato>::pertenece(const Dato &d) {
 }
 
 /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+* Pre: ---
+* Post: Devuelve ciero en el caso de que no exista ningún elemento en la lista
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
 */
 template<typename Dato>
-bool Lista<Dato>::esVacia() {
-    return this->size == 0;
+bool Lista<Dato>::empty() {
+    return this->dim == 0;
 }
 
 /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+* Pre: ---
+* Post: Devuelve el numero de elementos de la lista
 */
 template<typename Dato>
-int Lista<Dato>::tamanyo() {
-    return this->size;
+int Lista<Dato>::size() {
+    return this->dim;
 }
 
 /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+* Pre: ---
+* Post: Pone el iterador de la lista al principio
 */
 template<typename Dato>
-void Lista<Dato>::iniciarIterador() {
+void Lista<Dato>::begin() {
     this->iterador = this->cima;
 }
 
 /*
-* Devuelve true en el caso de que no exista ningún elemento en pila
+* Pre: Se ha ejecutado previamente begin
+* Post: Asigna el elemento apuntado por el iterador a d y avanza el iterador
+*       Devuelve ciero solo si no existen más elementos por visitar en la lista
 */
 template<typename Dato>
-bool Lista<Dato>::siguienteElemento(Dato &d) {
+bool Lista<Dato>::next(Dato &d) {
     if (this->iterador == nullptr) {
         return false;
     } else {
@@ -167,6 +202,31 @@ bool Lista<Dato>::siguienteElemento(Dato &d) {
         this->iterador = this->iterador->anterior;
         return true;
     }
+}
+
+/*
+* Pre: ---
+* Post: Copia la lista en copied
+* Note: Esta función se puede ejecutar simultaneamente en diferentes hilos
+*/
+template<typename Dato>
+void Lista<Dato>::copy(Lista<Dato>& copied){
+  copied.clear();
+  if(this.size>0){
+    typename Lista<Dato>::Nodo *aux = this->cima;
+    typename Lista<Dato>::Nodo *cima_nueva_pila = new typename Lista<Dato>::Nodo;
+    cima_nueva_pila->dato=aux->dato;
+    typename Lista<Dato>::Nodo *nueva_lista_aux=cima_nueva_pila;
+    aux=aux->anterior;
+    while (aux!=nullptr) {
+      nueva_lista_aux->anterior = new typename Lista<Dato>::Nodo;
+      nueva_lista_aux=nueva_lista_aux->anterior;
+      nueva_lista_aux->dato=aux->dato;
+      aux=aux->anterior;
+    }
+    copied.cima=cima_nueva_pila;
+    copied.dim=this.size();
+  }
 }
 
 #endif //PRUEBASSTRUCTS_LISTA_H
