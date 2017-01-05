@@ -45,7 +45,7 @@ public:
 *       en dbRestaurantes
 *       En caso contrario devuelve todos los restaurantes almacenados en dbRestaurantes
 */
-    void buscarRestaurante(double monumento_longitud, double monumento_latitud,
+    bool buscarRestaurante(double monumento_longitud, double monumento_latitud,
                          double& restaurante_longitud, double& restaurante_latitud);
 
 private:
