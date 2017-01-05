@@ -96,7 +96,13 @@ int atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_
                 if(listm.size()<5){
                     Lista<Monumento> listm_aux;
                     mon_rest.buscarMonumento(p[n], listm_aux);
-
+                    Monumento mon_aux;
+                    listm_aux.begin();
+                    while(!listm_aux.next(mon_aux)&&listm.size<=5){
+                        if (!listm.belongs(mon_aux)){
+                          listm.add(mon_aux);
+                        }
+                    }
                     111//Comporbar si la suma de los elementos que estan
                     //en listm_aux y no estan en listm es mayor que 5
                     // Si no lo es juntarlos
