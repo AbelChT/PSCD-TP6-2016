@@ -65,7 +65,7 @@ public:
 /*
 * Pre: Se ha ejecutado previamente begin
 * Post: Asigna el elemento apuntado por el iterador a d y avanza el iterador
-*       Devuelve ciero solo si no existen más elementos por visitar en la lista
+*       Devuelve ciero solo si existen más elementos por visitar en la lista
 */
     bool next(Dato& d);
 

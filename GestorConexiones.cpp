@@ -58,7 +58,7 @@ void recibirMensaje(int client_fd, string &buffer, Socket socket) {
 //---------------------------------------------------------------
 //Función que utilizan los thread
 
-int atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_rest) {
+void atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_rest) {
     Lista<Monumento> listm;
     Lista<Restaurante> listr;
     char MENS_FIN[] = "Fin";
@@ -92,13 +92,14 @@ int atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_
             int n=0;
             bool no_lleno=true;
             listm.clear();
+
             while (n < num_arg_busc&&no_lleno){
                 if(listm.size()<5){
                     Lista<Monumento> listm_aux;
                     mon_rest.buscarMonumento(p[n], listm_aux);
                     Monumento mon_aux;
                     listm_aux.begin();
-                    while(!listm_aux.next(mon_aux)&&listm.size<=5){
+                    while(listm_aux.next(mon_aux)&&listm.size<=5){
                         if (!listm.belongs(mon_aux)){
                           listm.add(mon_aux);
                         }
@@ -114,6 +115,10 @@ int atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_
                 }
                 ++n ;
             }
+            listm.begin()
+            while(listm.next(monumento_actual)){
+              monumento_actual.link;
+            }
 
             111 // A partir de aqui has de tranformar la lista a string y pasarla
             // La parte de restaurantes es igual
@@ -125,6 +130,7 @@ int atender_cliente(Socket &socket, int client_fd,DbMonumentosRestaurantes& mon_
                     mon_rest.buscarMonumento(p[n], listm);
                 }
             }
+
             while (p[0] == "Denegar") {
                 respuesta = "Servicio denegado";
                 enviarMensaje(client_fd, resp, socket);
@@ -192,7 +198,7 @@ void finalizar() {
 
 //-------------------------------------------------------------
 int main(int argc, char *argv[]) {
-    DbMonumentosRestaurantes db_monumentos_restaurantes(5, 5);//cargamos los datos de los monumentos y restaurantes
+    DbMonumentosRestaurantes db_monumentos_restaurantes(5, 1);//cargamos los datos de los monumentos y restaurantes
     // Puerto donde escucha el proceso servidor
     int SERVER_PORT = atoi(argv[1]);
     // CreaciÃ³n del socket con el que se llevarÃ¡ a cabo

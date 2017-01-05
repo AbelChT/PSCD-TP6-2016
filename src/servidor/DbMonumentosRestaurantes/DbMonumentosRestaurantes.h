@@ -45,10 +45,11 @@ public:
 *       en dbRestaurantes
 *       En caso contrario devuelve todos los restaurantes almacenados en dbRestaurantes
 */
-    void buscarRestaurante(Monumento monumento_seleccionado, Lista<Restaurante> &resultados);
+    void buscarRestaurante(double monumento_longitud, double monumento_latitud,
+                         double& restaurante_longitud, double& restaurante_latitud);
 
 private:
-    /*
+/*
 * Función auxiliar utilizada para calcular la distancia entre un restaurante y un
 * monumento
 * Devuelve el cuadrado de la distancia de "a" a "b"
