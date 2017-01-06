@@ -71,7 +71,7 @@ void DbSesion::borrarCliente(int idCliente) {
 }
 
 int DbSesion::numeroPeticionesCliente(int idCliente){
-	unique_lock<mutex> mtx_sesion;
+	mtx_sesion.lock();
 	if (!pertenece(this->dicc, idCliente)) {
 		return -1;
 	}
@@ -80,8 +80,12 @@ int DbSesion::numeroPeticionesCliente(int idCliente){
 		obtenerValor(this->dicc,idCliente,lAux); // Obtenemos la lista de pedidos del cliente idCliente
 		return lAux->size();					// Devolvemos su longitud, el numero de pedidos
 	}
+  mtx_sesion.unlock();
 }
 
 int DbSesion::numeroPeticionesTotales(){
-		return this->numero_peticiones_totales;
+    mtx_numero_peticiones_totales.lock();
+    int resultado = this->numero_peticiones_totales;
+    mtx_numero_peticiones_totales.unlock();
+		return resultado;
 }
