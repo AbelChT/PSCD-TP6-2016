@@ -23,5 +23,5 @@ public:
     //       path: Ruta local donde almacenar el archivo JSON
     // POST: Descarga un archivo JSON de la URL y la almacena en el path local indicado
     // 		 Devuelve 0 en caso de �xito y -1 en caso de error
-    int downloadJSON(char* URL, char* path);
+    int downloadJSON(char *URL, char *path);
 };
