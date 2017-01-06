@@ -24,20 +24,6 @@ public:
 	DbSesion();
 
 	/*
-	 * Asigna a listado la cadena de caracteres correspondiente a listar todos los clientes y sus pedidos
-	 * con el siguiente formato:
-	 * LISTANDO TODO:
-	 * Peticiones del cliente i:
-	 * ...
-	 * TOTAL PETICIONES CLIENTE i: nI
-	 * Peticiones del cliente j:
-	 * ...
-	 * TOTAL PETICIONES CLIENTE j: nJ
-	 * TOTAL PETICIONES: SUMATORIO peticiones(i-j)
-	 */
-	void listarTodo(string& listado);
-
-	/*
 	 * Asigna a listado la cadena de caracteres correspondiente a listar los pedidos de un cliente
 	 * con el siguiente formato:
 	 * Peticiones del cliente i:
@@ -60,24 +46,39 @@ public:
 
 	/*
 	 * Devuelve el entero correspondiente al numero de peticiones del cliente idCliente
+	 * Si el cliente no está devuelve -1
 	 */
-	int nPeticionesCliente(int idCliente);
+	int numeroPeticionesCliente(int idCliente);
 
-	/* Devuelve el entero correspondiente al numero de peticiones de la sesion s */
+	/*
+	 * Devuelve el entero correspondiente al numero de peticiones de la sesion s
+	 */
 
-	int nPeticionesTotales();
+	int numeroPeticionesTotales();
 
 private:
+
+    /*
+     * Numero de peticiones totales atendidas en el servidor
+     */
+    int numero_peticiones_totales;
 
 	/*
 	 * Diccionario representado como un arbol tipo AVL que guarda pares tipo(cliente,lista de pedidos)
 	 */
 	Diccionario<int, Lista<string>*> dicc;
 
+
+
 	/*
 	 * Aseguramos la exclusion mutua en nuestras operaciones con este mutex mtx_sesion
 	 */
 	mutex mtx_sesion;
+
+    /*
+     * Garantiza la exclusión mutua al modificar o acceder a numero de peticiones totales
+     */
+    mutex mtx_numero_peticiones_totales;
 };
 
 #endif
