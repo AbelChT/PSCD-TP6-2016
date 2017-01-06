@@ -2,46 +2,82 @@
 // File:   DbSesion.h
 // Author: Grupo Abel Chils TP6
 // Date:   diciembre 2016
-// Coms:   Especificaci�n de una librer�a
+// Coms:   Especificación de una librería
 //*****************************************************************
 
 #ifndef DBSESION_H
 #define DBSESION_H
 
 #include <iostream>
-#include "diccionario.h"
-#include "historico.h"
-#include "lista.h"
-#include <list>
+#include <mutex>
+
+#include "../../librerias/Diccionario/diccionarios.h"
+#include "../../librerias/Lista/Lista.h"
 
 using namespace std;
+class DbSesion {
+public:
 
-struct sesion;
+	/*
+	 * Creamos una base de datos de sesion sin todavia ningun cliente
+	 */
+	DbSesion();
 
-void crearSesion(sesion& s);
+	/*
+	 * Asigna a listado la cadena de caracteres correspondiente a listar todos los clientes y sus pedidos
+	 * con el siguiente formato:
+	 * LISTANDO TODO:
+	 * Peticiones del cliente i:
+	 * ...
+	 * TOTAL PETICIONES CLIENTE i: nI
+	 * Peticiones del cliente j:
+	 * ...
+	 * TOTAL PETICIONES CLIENTE j: nJ
+	 * TOTAL PETICIONES: SUMATORIO peticiones(i-j)
+	 */
+	void listarTodo(string& listado);
 
-void listarTodo(sesion& s,string& listado);
+	/*
+	 * Asigna a listado la cadena de caracteres correspondiente a listar los pedidos de un cliente
+	 * con el siguiente formato:
+	 * Peticiones del cliente i:
+	 * ...
+	 * TOTAL PETICIONES CLIENTE i: nI
+	 */
+	void listarCliente(int idCliente,string& listado);
 
-void listarCliente(sesion &s,int idCliente,string& listado);
+	/*
+	 * En caso de que el cliente idCliente no tuviese ningun pedido previo realizado en la sesion s, lo añade al arbol tipo AVL dicc
+	 * y le asigna pedido como su primer pedido en su lista de pedidos, en caso de que ya tuviera otro/s pedido/s añade este ultimo en
+	 * la ultima posicion de su lista de pedidos
+	 */
+	void nuevoPedido(int idCliente, string pedido);
 
-void nuevoPedido(int idCliente, string pedido,sesion& s);
+	/*
+	 * Elimina al cliente idCliente de la sesion s
+	 */
+	void borrarCliente(int idCliente);
 
-void borrarCliente(int idCliente, sesion& s);
+	/*
+	 * Devuelve el entero correspondiente al numero de peticiones del cliente idCliente
+	 */
+	int nPeticionesCliente(int idCliente);
 
-int nPeticionesCliente(sesion& s, int idCliente);
+	/* Devuelve el entero correspondiente al numero de peticiones de la sesion s */
 
-int nPeticionesTotales(sesion& s);
+	int nPeticionesTotales();
 
-struct sesion {
-	friend void crearSesion(sesion& s);
-	friend void listarTodo(sesion& s,string& listado);
-	friend void listarCliente(sesion &s,int idCliente,string& listado);
-	friend void nuevoPedido(int idCliente, string pedido, sesion& s);
-	friend void borrarCliente(int idCliente, sesion& s);
-	friend int nPeticionesCliente(sesion& s, int idCliente);
-	friend int nPeticionesTotales(sesion& s);
 private:
-	Diccionario<int, list<string>> dicc;
+
+	/*
+	 * Diccionario representado como un arbol tipo AVL que guarda pares tipo(cliente,lista de pedidos)
+	 */
+	Diccionario<int, Lista<string>*> dicc;
+
+	/*
+	 * Aseguramos la exclusion mutua en nuestras operaciones con este mutex mtx_sesion
+	 */
+	mutex mtx_sesion;
 };
 
 #endif

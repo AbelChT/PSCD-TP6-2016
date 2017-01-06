@@ -6,31 +6,34 @@
 #ifndef RESTAURANTE_H
 #define RESTAURANTE_H
 
-#include <string>
-
-using namespace std;
-
 /*
 * TAD que representa un restaurante
 */
 
-struct Restaurante{
+class Restaurante{
+public:
 
-  //Nombre del restaurante
-  string nombre;
+  /*
+  * Crea un restaurante ubicado en "UTMNorthing" metros norte
+  * y "UTMEasting" metros este segun el sistema UTM
+  */
+  Restaurante(double UTMNorthing, double UTMEasting);
 
-  //Link al restaurante
-  string link;
+  /*
+  * UTMNorthing y UTMEasting tomarán el valor de la ubicación del restaurante, expresada
+  * en metros norte y metros este respectivamente según el sistema UTM
+  * Coordenadas UTM30
+  */
+  void getcoordenadas(double& UTMNorthing, double& UTMEasting);
+private:
 
-  //Descripcion del retaurante
-  string direccion;
+  /*
+  * Coordenadas del restaurante
+  * [0] UTMNorthing
+  * [1] UTMEasting
+  */
+  double coordenadas[2];
 
-  //Categoria del retaurante
-  string categoria;
-
-  //Ubicación del restaurante
-  double coordenadas[2];// [0] long
-                        //[1] lat
 };
 
 #endif

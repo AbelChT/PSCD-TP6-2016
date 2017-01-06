@@ -1,0 +1,2 @@
+El sistema de tarifas se ha basado en el que realiza los taxis, se pagara una tasa fija por el hecho de realizar la conecion y luego 
+una cantidad variable que será proporcional al número de peticiones realizadas
