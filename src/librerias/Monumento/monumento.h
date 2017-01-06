@@ -12,16 +12,36 @@ using namespace std;
 /*
 * TAD que representa un monumento
 */
-struct Monumento{
 
-  //Titulo del monumento
-  string title;
+class Monumento{
+public:
 
+  /*
+  * Crea un monumento con sitio web "link" y ubicado en "UTMNorthing" metros norte
+  * y "UTMEasting" metros este segun el sistema UTM
+  */
+  Monumento(string link, double UTMNorthing, double UTMEasting);
+
+  /*
+  * Devuelve la direccion web del monumento
+  */
+  string getlink();
+
+  /*
+  * UTMNorthing y UTMEasting tomarán el valor de la ubicación del monumento, expresada
+  * en metros norte y metros este respectivamente según el sistema UTM
+  * Coordenadas UTM30
+  */
+  void getcoordenadas(double& UTMNorthing, double& UTMEasting);
+private:
   //Link al monumento
   string link;
 
-  //Coordenadas del monumento
-  double coordenadas[2];// [0] long
-                        //[1] lat
+  /*
+  * Coordenadas del monumento
+  * [0] UTMNorthing
+  * [1] UTMEasting
+  */
+  double coordenadas[2];
 };
 #endif//MONUMENTO_H
