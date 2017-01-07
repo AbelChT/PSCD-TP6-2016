@@ -87,6 +87,9 @@ DbMonumentosRestaurantes db_monumentos_restaurantes(5);//cargamos los datos de l
  * Funcion que simula a un representante
  */
 void representante(Socket &socket, int client_fd) {
+    int length = 100;
+    string buffer;
+    string respuesta;
 
     // Controlo que hay un nuevo cliente
     if (end_service.load()) {
@@ -99,29 +102,26 @@ void representante(Socket &socket, int client_fd) {
         ++numero_total_clientes;
         ++representantes_activos;//Aumento el numero de representantes activos
         mtx_end.unlock();
+
+        /*
+        * Recibo primer mensaje con id del cliente
+        */
+        if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
+
+            mtx_pantalla.lock();
+            cerr << "Error al recibir datos: " << strerror(errno) << endl;
+            mtx_pantalla.unlock();
+
+        }      
+
+        string acept = "Servicio aceptado";
+        enviarMensaje(client_fd, acept, socket);
     }
-
-    int length = 100;
-    string buffer;
-    string respuesta;
-
-    1111
+   
     /*
-    * Recibo primer mensaje con id del cliente
-    */
-    if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
-
-        mtx_pantalla.lock();
-        cerr << "Error al recibir datos: " << strerror(errno) << endl;
-        mtx_pantalla.unlock();
-
-    }
-
-   1111
-    /*
-     * Tratar este mensaje y almacenar en id_cliente el id del cliente
+     * Almacenar en id_cliente el id del cliente
      * */
-    int id_cliente;
+    int id_cliente=atoi(buffer);
 
 
     while (true) {//itero mientras el cliente envie peticiones
@@ -129,7 +129,9 @@ void representante(Socket &socket, int client_fd) {
          * Recibo primer mensaje
          */
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
+            mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
+            mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
         if(buffer.compare(MENS_FIN)==0){//El cliente ha decidido finalizar la comunicación
@@ -138,44 +140,37 @@ void representante(Socket &socket, int client_fd) {
 
         //No se ha decidido finalizar la comunicación
 
-        1111
-        //Tratar mensaje, es decir rellenar todos los campos de abajo
-
         //Almacenar en la lista los parámetros a buscar
+        
+        11111
+        //Algoritmo
+        11111
+
         Lista<string> parametros_buscar;
 
-        //Almacenar en parametros_en_string los parámetros a buscar pero como un string
-        string parametros_en_string;
-
         //Añado el pedido a la base de datos
-        db_sesion.nuevoPedido(id_cliente, parametros_en_string);
-
+        db_sesion.nuevoPedido(id_cliente, "Buscar monumento "+buffer);
 
         //Monumentos para enviar al cliente
         Lista<Monumento *> enviar_al_cliente;
 
         //Auxiliar
-        Monumento *mon_aux;
+        Lista<Monumento *> aux_monum;
 
+        parametros_buscar.begin();
 
+        string buscar_esta_iteracion;
         //Algoritmo de buscar si esta
-        1111
-        while ((enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)&&) {
-            if (listm.size() <= 5) {
-                Lista<Monumento *> listm_aux;
-                mon_rest.buscarMonumento(p[n], listm_aux);
-                listm_aux.begin();
-                while (listm_aux.next(mon_aux) && listm.size() <= 5) {
-                    if (!listm.belongs(mon_aux)) {
-                        listm.add(mon_aux);
-                    }
+        while ((enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)&&parametros_buscar.next(buscar_esta_iteracion)) {
+            db_monumentos_restaurantes.buscarMonumento(buscar_esta_iteracion, aux_monum);
+            aux_monum.begin();
+            Monumento* actual_mirar;
+            while(aux_monum.next(actual_mirar)&&(enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)){
+                if(!enviar_al_cliente.belongs(actual_mirar)){
+                    enviar_al_cliente.add(actual_mirar);
                 }
-            } else {
-                no_lleno = false;
             }
-            ++n;
         }
-
 
         //Si la lista está vacía (nada encontrado)
         if (enviar_al_cliente.size() == 0) {
@@ -187,12 +182,16 @@ void representante(Socket &socket, int client_fd) {
             continue;//Vuelvo al inicio
         } else{
             enviar_al_cliente.begin();
-            respuesta.clear();
+            Monumento * mon_aux;
+            enviar_al_cliente.next(mon_aux);
+            respuesta=mon_aux->getlink();
             while(enviar_al_cliente.next(mon_aux)){
                 respuesta = respuesta + " " + mon_aux->getlink();
             }
             if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
+                mtx_pantalla.lock();
                 cerr << "Error al enviar datos: " << strerror(errno) << endl;
+                mtx_pantalla.unlock();
                 break;
             }
         }
@@ -201,68 +200,52 @@ void representante(Socket &socket, int client_fd) {
         * Recibo segundo mensaje
          */
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
+            mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
+            mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
         if(buffer.compare(MENS_FIN)==0){//El cliente ha decidido finalizar la comunicación
             break;
         }
+        if(atoi(buffer)<1||atoi(buffer)>enviar_al_cliente.size()){//La respuesta es coherente
+            mtx_pantalla.lock();
+            cerr << "La respuesta del cliente no es coherente"<< endl;
+            mtx_pantalla.unlock();
+            break;//finalizamos comunicacion
+        }
 
-        sesion.nuevoPedido(client_fd, buffer);
-        if (stoi(buffer) >= 0) {
-            int indmon = stoi(buffer);
-            double coord[2];
-            listm.begin();
-            while (listm.next(mon_aux)) {
-                if (indmon == 0) {
-                    mon_aux->getcoordenadas(coord[0], coord[1]);
-                }
-                indmon--;
+        sesion.nuevoPedido(client_fd, "Buscar restaurante "+buffer);
+        int indmon = stoi(buffer);
+        double coord_monumento[2];
+        enviar_al_cliente.begin();
+        while (enviar_al_cliente.next(mon_aux)) {
+            if (indmon == 0) {
+                 mon_aux->getcoordenadas(coord[0], coord[1]);
+             }
+              indmon--;
+        }
+        double coord_rest[2];
+        mon_rest.buscarRestaurante(coord_monumento[0], coord_monumento[1], coord_rest[0], coord_rest[1]);//suponemos que siempre se carga bien
+        respuesta = to_string(coord_rest[0]) + to_string(coord_rest[1]);
+
+        if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
+                mtx_pantalla.lock();
+                cerr << "Error al enviar datos: " << strerror(errno) << endl;
+                mtx_pantalla.unlock();
+                break;
             }
-            double coordrest[2];
-            mon_rest.buscarRestaurante(coord[0], coord[1], coordrest[0], coordrest[1]);
-            //Transformar double en string, comprobar si funciona
-            c1 << coordrest[0];
-            c2 << coordrest[1];
-            respuesta = c1.str();
-            +' ' + c2.str();
-            enviarMensaje(client_fd, respuesta, socket);
-        } else {
-            precio = GestorPrecios.precio(sesion.numeroPeticionesCliente(client_fd));
-            precioTot = precioTot + precio;
-            c1 << precio;
-            respuesta = c1.str();
-            enviarMensaje(client_fd, respuesta, socket);
-            mtx.lock();
-            dentro--;
-            nTotClientes++;
-            if (dentro == 0 && endSERV) Fin.signal();
-            return 0;
-        }
-
-        /*
-        * Recibo tercer mensaje
-         */
-        if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
-            cerr << "Error al recibir datos: " << strerror(errno) << endl;
-            break;//Salgo del bucle
-        }
-
-
-        sesion.nuevoPedido(client_fd, buffer);
-        if (buffer == MENS_FIN) {
-            precio = GestorPrecios.precio(sesion.numeroPeticionesCliente(client_fd));
-            precioTot = precioTot + precio;
-            c1 << precio;
-            respuesta = c1.str();
-            enviarMensaje(client_fd, respuesta, socket);
-            mtx.lock();
-            dentro--;
-            nTotClientes++;
-            if (dentro == 0 && endSERV) Fin.signal();
-            return 0;
-        }
     }
+
+    respuesta=to_string(gestor_precios.precio(db_sesion.obtener_numero_peticiones(id_cliente)));
+
+    //Envio al cliente el precio por el servicio
+    if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
+                mtx_pantalla.lock();
+                cerr << "Error al enviar datos: " << strerror(errno) << endl;
+                mtx_pantalla.unlock();
+                
+            }
 
     string informacion_cliente;
 
