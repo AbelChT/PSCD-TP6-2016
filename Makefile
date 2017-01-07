@@ -31,8 +31,8 @@ DBSESION=DbSesion
 GESTORCONEXIONES=GestorConexiones
 GESTORPRECIOS=GestorPrecios
 
-#Target
-TARGET=main
+#Modulos cliente
+CLIENTEMANUAL=ClienteManual
 
 # #################### #
 # FLAGS DE COMPILACION #
@@ -46,7 +46,7 @@ SOCKETSFLAGS=-lsocket -lnsl # Flags linkado sockets (Solaris SunOS)
 
 .PHONY:all
 
-all: ${TARGET}
+all: ${GESTORCONEXIONES} ${CLIENTEMANUAL}
 
 # SOCKETS
 # Compilacion libreria de Sockets
@@ -74,14 +74,21 @@ ${DBSESION}.o: src/servidor/DbSesion/${DBSESION}.h src/servidor/DbSesion/${DBSES
 ${GESTORPRECIOS}.o: src/servidor/GestorPrecios/${GESTORPRECIOS}.h src/servidor/GestorPrecios/${GESTORPRECIOS}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorPrecios/${GESTORPRECIOS}.cpp
 #-----------------------------------------------------------
-# PRUEBA_COMPILAR
-# Compilacion
+# Compilacion Servidor
 ${GESTORCONEXIONES}.o: src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 #-----------------------------------------------------------
-# Linkado
-${TARGET}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o
-	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o -o ${TARGET} ${LDFLAGS}#${SOCKETSFLAGS} #descomentar para Hendrix
+# Compilacion ClienteManual
+${CLIENTEMANUAL}.o: src/cliente/${CLIENTEMANUAL}.cpp
+	${CPP} -c ${CPPFLAGS} src/cliente/${CLIENTEMANUAL}.cpp
+#-----------------------------------------------------------
+# Linkado Servidor
+${GESTORCONEXIONES}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o
+	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o -o Servidor ${LDFLAGS}#${SOCKETSFLAGS} #descomentar para Hendrix
+#-----------------------------------------------------------
+# Linkado ClienteManual
+${CLIENTEMANUAL}: ${CLIENTEMANUAL}.o ${SOCKET}.o
+	${CPP} ${CLIENTEMANUAL}.o ${SOCKET}.o -o ${CLIENTEMANUAL} ${LDFLAGS}#${SOCKETSFLAGS} #descomentar para Hendrix
 #-----------------------------------------------------------
 
 # LIMPIEZA
@@ -96,5 +103,5 @@ clean:
 	$(RM) ${MONUMENTO}.o
 	$(RM) ${JSONDOWNLOAD}.o
 	$(RM) ${SEMAFORO}.o
-	$(RM) ${TARGET}
-	
+	$(RM) ${GESTORCONEXIONES}
+	$(RM) ${CLIENTEMANUAL}
