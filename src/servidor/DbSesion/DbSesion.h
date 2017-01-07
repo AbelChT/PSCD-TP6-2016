@@ -11,7 +11,7 @@
 #include <iostream>
 #include <mutex>
 
-#include "../../librerias/Diccionario/diccionarios.h"
+#include "../../librerias/Diccionario/Diccionarios.h"
 #include "../../librerias/Lista/Lista.h"
 
 using namespace std;
@@ -23,6 +23,11 @@ public:
      * Creamos una base de datos de sesion sin todavia ningun cliente
      */
     DbSesion();
+
+    /*
+     * Añade el cliente a la base de datos de sesion
+     */
+     void anyadirCliente(int id);
 
     /*
      * Asigna a listado la cadena de caracteres correspondiente a listar los pedidos de un cliente
