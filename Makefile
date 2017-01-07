@@ -95,4 +95,5 @@ clean:
 	$(RM) ${RESTAURANTE}.o
 	$(RM) ${MONUMENTO}.o
 	$(RM) ${JSONDOWNLOAD}.o
+	$(RM) ${SEMAFORO}.o
 	$(RM) ${TARGET}
