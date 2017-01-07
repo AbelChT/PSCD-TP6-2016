@@ -76,7 +76,7 @@ ${GESTORPRECIOS}.o: src/servidor/GestorPrecios/${GESTORPRECIOS}.h src/servidor/G
 #-----------------------------------------------------------
 # PRUEBA_COMPILAR
 # Compilacion
-${GESTORCONEXIONES}.o: src/servidor/GestorConexiones/${TESTCOMPILACION}.cpp
+${GESTORCONEXIONES}.o: src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 #-----------------------------------------------------------
 # Linkado
