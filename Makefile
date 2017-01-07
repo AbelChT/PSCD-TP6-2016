@@ -23,6 +23,7 @@ SOCKET=Socket
 RESTAURANTE=Restaurante
 MONUMENTO=Monumento
 JSONDOWNLOAD=JsonDownload
+SEMAFORO=Semaphore
 
 #Modulos servidor
 DBMONUMENTOSRESTAURANTES=DbMonumentosRestaurantes
@@ -55,6 +56,9 @@ ${SOCKET}.o: src/librerias/Socket/${SOCKET}.h src/librerias/Socket/${SOCKET}.cpp
 ${RESTAURANTE}.o: src/librerias/Restaurante/${RESTAURANTE}.h src/librerias/Restaurante/${RESTAURANTE}.cpp
 	${CPP} -c ${CPPFLAGS} src/librerias/Restaurante/${RESTAURANTE}.cpp
 #-----------------------------------------------------------
+${SEMAFORO}.o: src/librerias/Semaphore/${SEMAFORO}.h src/librerias/Semaphore/${SEMAFORO}.cpp
+	${CPP} -c ${CPPFLAGS} src/librerias/Semaphore/${SEMAFORO}.cpp
+#-----------------------------------------------------------
 ${MONUMENTO}.o: src/librerias/Monumento/${MONUMENTO}.h src/librerias/Monumento/${MONUMENTO}.cpp
 	${CPP} -c ${CPPFLAGS} src/librerias/Monumento/${MONUMENTO}.cpp
 #-----------------------------------------------------------
@@ -76,8 +80,8 @@ ${GESTORCONEXIONES}.o: src/servidor/GestorConexiones/${TESTCOMPILACION}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 #-----------------------------------------------------------
 # Linkado
-${TARGET}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o
-	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o -o ${TARGET} ${LDFLAGS}#${SOCKETSFLAGS} #descomentar para Hendrix
+${TARGET}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o
+	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o -o ${TARGET} ${LDFLAGS}#${SOCKETSFLAGS} #descomentar para Hendrix
 #-----------------------------------------------------------
 
 # LIMPIEZA
