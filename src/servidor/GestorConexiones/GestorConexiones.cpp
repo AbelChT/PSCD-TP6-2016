@@ -3,19 +3,20 @@
 #include <string>
 #include <mutex>
 #include <atomic>
+#include <cstdlib>
 
 #include "../../../src/librerias/Socket/Socket.h"
 #include "../../../src/servidor/DbMonumentosRestaurantes/DbMonumentosRestaurantes.h"
 #include "../../../src/servidor/GestorPrecios/GestorPrecios.h"
 #include "../../../src/servidor/DbSesion/DbSesion.h"
-
+#include "../../../src/librerias/UTM2LL/LatLong-UTMconversion.h"
 #include "../../../src/librerias/Semaphore/Semaphore.h"
 
 
 using namespace std;
 
 /*
- * Tamaño máximo del mensaje
+ * Tama�o m�ximo del mensaje
  */
 const int MESSAGE_SIZE = 4001;
 
@@ -28,15 +29,15 @@ int representantes_activos = 0;
  * Mensaje usado para marcar el fin de la comunicacion entre cliente
  * y servidor
  */
-string MENS_FIN = "FIN";
+string MENS_FIN = "Fin";
 
 /*
  * Numero de monumentos a devolver al cliente
  */
-const int NUM_MONUMENTOS_DEVOLVER = 5;
+const int NUM_MONUMENTOS_DEVOLVER=5;
 
 /*
- * Control de finalizaión del servicio
+ * Control de finalizai�n del servicio
  */
 atomic_bool end_service;
 
@@ -59,7 +60,8 @@ mutex mtx_pantalla;
 /*
  * Base de datos de clientes atendidos actualmente
  */
-DbSesion db_sesion;
+
+sesion s;
 
 /*
  * Numero total de clientes atendidos
@@ -73,7 +75,7 @@ double factura_total;
 
 /*
  * Gestor de precios, inicializado para cobrar 2 euros por
- * establecimiento de servicio y euro y medio por petición
+ * establecimiento de servicio y euro y medio por petici�n
  */
 GestorPrecios gestor_precios(1.5, 2);
 
@@ -87,100 +89,104 @@ DbMonumentosRestaurantes db_monumentos_restaurantes(5);//cargamos los datos de l
  * Funcion que simula a un representante
  */
 void representante(Socket &socket, int client_fd) {
-    mtx_pantalla.lock();
-    cout << "Nuevo representante creado para el cliente con fd " << client_fd << endl;
-    mtx_pantalla.unlock();
-
-
     int length = 100;
     string buffer;
     string respuesta;
-
     // Controlo que hay un nuevo cliente
     if (end_service.load()) {
         string den = "Servicio denegado";
-        if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
-            mtx_pantalla.lock();
-            cerr << "Error al enviar datos: " << strerror(errno) << endl;
-            mtx_pantalla.unlock();
-            socket.Close(client_fd);
-            mtx_end.lock();
-            --representantes_activos;
-            if (representantes_activos == 0 && end_service.load()) {
-                mtx_end.unlock();
-                fin.signal();
-            }
-            return;
-
-        }
-
-        socket.Close(client_fd);
-        return;//Salimos
-    }
-    else {// Se puede atender al cliente
-        mtx_end.lock();
-        ++numero_total_clientes;
-        ++representantes_activos;//Aumento el numero de representantes activos
-        mtx_end.unlock();
-
-        /*
-        * Recibo primer mensaje con id del cliente
-        */
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
             mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
             mtx_pantalla.unlock();
             socket.Close(client_fd);
-            mtx_end.lock();
-            --representantes_activos;
-            if (representantes_activos == 0 && end_service.load()) {
-                mtx_end.unlock();
-                fin.signal();
-            }
-            return;
         }
-        cout << "Mensaje recibido" << endl;
-        string acept = "Servicio aceptado";
-        if (socket.Send(client_fd, acept) < 0) {//Caso en el que falle el envio del mensaje
+
+        if (socket.Send(client_fd, den) < 0) {//Caso en el que falle el envio del mensaje
+            socket.Close(client_fd);
             mtx_pantalla.lock();
             cerr << "Error al enviar datos: " << strerror(errno) << endl;
             mtx_pantalla.unlock();
-            socket.Close(client_fd);
-            mtx_end.lock();
-            --representantes_activos;
-            if (representantes_activos == 0 && end_service.load()) {
-                mtx_end.unlock();
-                fin.signal();
-            }
-            return;
         }
+        mtx_end.lock();
+        cout << "Denegacion enviada" << endl;
+        if (representantes_activos == 0) {
+            mtx_end.unlock();
+            fin.signal();
+        }
+        socket.Close(client_fd);
+        return;
     }
-    cout << "Mensaje enviado" << endl;
+    // Se puede atender al cliente
+    mtx_end.lock();
+    ++numero_total_clientes;
+    ++representantes_activos;//Aumento el numero de representantes activos
+    mtx_end.unlock();
+    /*
+    * Recibo primer mensaje con id del cliente
+    */
+    if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
+        mtx_pantalla.lock();
+        cerr << "Error al recibir datos: " << strerror(errno) << endl;
+        mtx_pantalla.unlock();
+        socket.Close(client_fd);
+        mtx_end.lock();
+        --representantes_activos;
+        if (representantes_activos == 0 && end_service.load()) {
+            mtx_end.unlock();
+            fin.signal();
+        }
+        return;
+    }
+    cout << "ID recibido" << endl;
+    string acept = "Servicio aceptado";
+    if (socket.Send(client_fd, acept) < 0) {//Caso en el que falle el envio del mensaje
+        mtx_pantalla.lock();
+        cerr << "Error al enviar datos: " << strerror(errno) << endl;
+        mtx_pantalla.unlock();
+        socket.Close(client_fd);
+        mtx_end.lock();
+        --representantes_activos;
+        if (representantes_activos == 0 && end_service.load()) {
+            mtx_end.unlock();
+            fin.signal();
+        }
+        return;
+    }
+    cout << "Pedido aceptado" << endl;
     /*
      * Almacenar en id_cliente el id del cliente
      * */
-    int id_cliente = stoi(buffer);
-
+    int id_cliente=stoi(buffer);
 
     while (true) {//itero mientras el cliente envie peticiones
         /*
          * Recibo primer mensaje
          */
+        mtx_pantalla.lock();
+        cout << "Leo primer mensaje de " << id_cliente << endl;
+        mtx_pantalla.unlock();
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
             mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
             mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
-        if (buffer.compare(MENS_FIN) == 0) {//El cliente ha decidido finalizar la comunicación
+        mtx_pantalla.lock();
+        cout << "Mensaje recibido" << endl;
+        mtx_pantalla.unlock();
+
+        if(buffer==MENS_FIN){//El cliente ha decidido finalizar la comunicaci�n
             break;
         }
 
-        //No se ha decidido finalizar la comunicación
+        //No se ha decidido finalizar la comunicaci�n
+        mtx_pantalla.lock();
+        cout << "Almacenando...." << endl;
+        mtx_pantalla.unlock();
 
-        //Almacenar en la lista los parámetros a buscar
+        //Almacenar en la lista los par�metros a buscar
         Lista<string> parametros_buscar;
-
         int j = -1;
         int cont = 0;
         int aux;
@@ -198,9 +204,10 @@ void representante(Socket &socket, int client_fd) {
             }
         }
 
-        //Añado el pedido a la base de datos
-        db_sesion.nuevoPedido(id_cliente, "Buscar monumento " + buffer);
-
+        //A�ado el pedido a la base de datos
+        cout << "Anyado pedido" << endl;
+        nuevoPedido(id_cliente, "Buscar monumento "+buffer,s);
+        cout << "Pedido anyadido" << endl;
         //Monumentos para enviar al cliente
         Lista<Monumento *> enviar_al_cliente;
 
@@ -214,18 +221,18 @@ void representante(Socket &socket, int client_fd) {
 
         string buscar_esta_iteracion;
         //Algoritmo de buscar si esta
-        while ((enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER) && parametros_buscar.next(buscar_esta_iteracion)) {
+        while ((enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)&&parametros_buscar.next(buscar_esta_iteracion)) {
             db_monumentos_restaurantes.buscarMonumento(buscar_esta_iteracion, aux_monum);
             aux_monum.begin();
             Monumento* actual_mirar;
-            while (aux_monum.next(actual_mirar) && (enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)) {
-                if (!enviar_al_cliente.belongs(actual_mirar)) {
+            while(aux_monum.next(actual_mirar)&&(enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)){
+                if(!enviar_al_cliente.belongs(actual_mirar)){
                     enviar_al_cliente.add(actual_mirar);
                 }
             }
         }
 
-        //Si la lista está vacía (nada encontrado)
+        //Si la lista est� vac�a (nada encontrado)
         if (enviar_al_cliente.size() == 0) {
             respuesta = "Nada encontrado";
             if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
@@ -233,12 +240,11 @@ void representante(Socket &socket, int client_fd) {
                 break;
             }
             continue;//Vuelvo al inicio
-        }
-        else {
+        } else{
             enviar_al_cliente.begin();
             enviar_al_cliente.next(mon_aux);
-            respuesta = mon_aux->getlink();
-            while (enviar_al_cliente.next(mon_aux)) {
+            respuesta=mon_aux->getlink();
+            while(enviar_al_cliente.next(mon_aux)){
                 respuesta = respuesta + " " + mon_aux->getlink();
             }
             if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
@@ -258,29 +264,44 @@ void representante(Socket &socket, int client_fd) {
             mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
-        if (buffer.compare(MENS_FIN) == 0) {//El cliente ha decidido finalizar la comunicación
+        if(buffer==MENS_FIN){//El cliente ha decidido finalizar la comunicaci�n
             break;
         }
-        if (stoi(buffer) < 1 || stoi(buffer) > enviar_al_cliente.size()) {//La respuesta es coherente
+        char *bufferaux = strdup(buffer.c_str());
+        if(atoi(bufferaux)<1||atoi(bufferaux)>enviar_al_cliente.size()){//La respuesta es no coherente
             mtx_pantalla.lock();
-            cerr << "La respuesta del cliente no es coherente" << endl;
+            cerr << "La respuesta del cliente no es coherente"<< endl;
             mtx_pantalla.unlock();
-            break;//finalizamos comunicacion
+            respuesta = "Informacion incorrecta";
+            if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
+                mtx_pantalla.lock();
+                cerr << "Error al enviar datos: " << strerror(errno) << endl;
+                mtx_pantalla.unlock();
+                break;
+            }
+            continue;
         }
-
-        db_sesion.nuevoPedido(client_fd, "Buscar restaurante " + buffer);
-        int indmon = stoi(buffer);
+        nuevoPedido(client_fd, "Buscar restaurante "+buffer,s);
+        cout << "Hasta aqui bien 1" << endl;
+        int indmon = atoi(bufferaux);
         double coord_monumento[2];
         enviar_al_cliente.begin();
+        cout << "Hasta aqui bien 2" << endl;
         while (enviar_al_cliente.next(mon_aux)) {
             if (indmon == 0) {
                 mon_aux->getcoordenadas(coord_monumento[0], coord_monumento[1]);
+                cout << "Hasta aqui bien 3" << endl;
             }
             indmon--;
         }
         double coord_rest[2];
         db_monumentos_restaurantes.buscarRestaurante(coord_monumento[0], coord_monumento[1], coord_rest[0], coord_rest[1]);//suponemos que siempre se carga bien
-        respuesta = to_string(coord_rest[0]) + to_string(coord_rest[1]);
+        //Convertimos UTM a Lat, Long
+        int RefEllipsoid = 23;
+        double Lat, Long;
+        char UTMZoneZgza[4] = "30T";
+        UTMtoLL(RefEllipsoid, coord_rest[0], coord_rest[1], UTMZoneZgza, Lat, Long);
+        respuesta = to_string(Lat) +" " + to_string(Long);
 
         if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
             mtx_pantalla.lock();
@@ -290,25 +311,24 @@ void representante(Socket &socket, int client_fd) {
         }
     }
 
-    respuesta = to_string(gestor_precios.precio(db_sesion.numeroPeticionesCliente(id_cliente)));
+    respuesta=to_string(gestor_precios.precio(nPeticionesCliente(s,id_cliente)));
 
     //Envio al cliente el precio por el servicio
     if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
         mtx_pantalla.lock();
         cerr << "Error al enviar datos: " << strerror(errno) << endl;
         mtx_pantalla.unlock();
-
     }
 
     string informacion_cliente;
-
-    db_sesion.listarCliente(id_cliente, informacion_cliente);
-    db_sesion.borrarCliente(id_cliente);
+    cout << "Finalizacion solicitada por " << id_cliente << endl;
+    listarCliente(s,id_cliente,informacion_cliente);
+    borrarCliente(id_cliente,s);
 
     //Muestro informacion sobre el cliente
     mtx_pantalla.lock();
 
-    cout << informacion_cliente << endl;
+    cout<<informacion_cliente<<endl;
 
     mtx_pantalla.unlock();
 
@@ -316,23 +336,22 @@ void representante(Socket &socket, int client_fd) {
     int error_code = socket.Close(client_fd);
     if (error_code == -1) {
         mtx_pantalla.lock();
-
         cerr << "Error cerrando el socket del cliente: " << strerror(errno) << endl;
-
         mtx_pantalla.unlock();
     }
 
     //Controlo fin del representante
     mtx_end.lock();
     --representantes_activos;
+    cout << "Numero de representantes activos: " << representantes_activos << endl;
     if (representantes_activos == 0 && end_service.load()) {
         mtx_end.unlock();
         fin.signal();
-    }
-    else {
+    } else {
         mtx_end.unlock();
     }
 }
+
 
 /*
  * Controla el final del programa
@@ -341,8 +360,7 @@ void control_fin(int socket_fd, Socket &socket) {
     string finalizar;
     cin >> finalizar;
     end_service.store(true);
-    fin.wait();
-
+    if (representantes_activos!=0) fin.wait();
     //Cerramos el socket para si se ha quedado esperando el accept falle
     if (socket.Close(socket_fd) == -1) {
         cerr << "Error cerrando el socket del servidor: " << strerror(errno) << endl;
@@ -351,13 +369,12 @@ void control_fin(int socket_fd, Socket &socket) {
 
 //-------------------------------------------------------------
 int main(int argc, char *argv[]) {
-
+    cout<<"Servidor iniciado"<<endl;
+    crearSesion(s);
     if (argc != 2) {
         cerr << "Numero de argumentos incorrecto" << endl;
         return -1;
     }
-
-    cout << "Servidor ha cargado y utiliza el puerto: " << argv[1] << endl;
 
     //Marco el fin de servicio como falso
     end_service.store(false);
@@ -392,17 +409,26 @@ int main(int argc, char *argv[]) {
     while (!end_service.load()) {
         // Accept
         int client_fd = socket.Accept();
+        cout<<"End service " <<end_service.load()<<endl;
+        cout<<"Return del fd "<<client_fd<<endl;
 
-        if ((client_fd < 0) && (!end_service.load())) {
+        if ((client_fd < 0)) {
             cerr << "Error en el accept: " << strerror(errno) << endl;
-        }
-        else {//Se ha realizado el accept con exito
+
+            cout<<"Hasta aqui llega"<<endl;
+
+            break;
+        }else {//Se ha realizado el accept con exito
+            cout<<"Va a entrar a representante"<<endl;
             thread(representante, ref(socket), client_fd).detach();
         }
     }
-
+    if(representantes_activos==0)fin.signal();
     finalizador.join();//En este momento ya han terminado todos los threads y se ha cerrado el socket
-
+    string listado;
+    listarTodo(s,listado);
+    cout << listado << endl;
+    cout << endl;
     // Mensaje de despedida
     cout << "Bye bye" << endl;
 
