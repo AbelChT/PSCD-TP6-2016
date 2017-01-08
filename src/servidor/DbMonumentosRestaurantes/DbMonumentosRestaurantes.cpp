@@ -20,6 +20,7 @@ void formatear_y_separar(string input,Lista<string>& output){
         ++j;
       }
 }
+
 if(input.length()>0){
   output.add(input);
 }
@@ -68,16 +69,19 @@ DbMonumentosRestaurantes::DbMonumentosRestaurantes(int MAX_NUM_MONUMENTOS_DEVOLV
   //  cout<<URL_MONUMENTOS<<endl;
     char path_MONUMENTOS[100] = "monumentos.json";
 
-    downloader.downloadJSON(URL_MONUMENTOS, path_MONUMENTOS);//descargo los monumentos
+    //downloader.downloadJSON(URL_MONUMENTOS, path_MONUMENTOS);//descargo los monumentos
 
     std::ifstream fichero_monumentos(path_MONUMENTOS);
     json json_monumentos(fichero_monumentos);//preparo el archivo json de monumentos descargado
 
     json::iterator it_monumentos = json_monumentos["response"].at("docs").begin();//coloco el iterador en el primer monumento
 
-    for (int i = 0; i < json_monumentos["response"].at("docs").size(); ++i) {//itero hasta haber insertado todos los monumentos a la estructura
+    int rango_buscar=json_monumentos["response"].at("docs").size()-60;
+
+    for (int i = 0; i < rango_buscar; ++i) {//itero hasta haber insertado todos los monumentos a la estructura
         //Valores monumento
         string link_monumento = (*it_monumentos).at("uri").get<string>();//url del monumento
+
         double UTM_north = (*it_monumentos).at("y_coordinate").get<double>();//coordenadas del monumento
         double UTM_east = (*it_monumentos).at("x_coordinate").get<double>();//coordenadas del monumento
         Monumento *monum_actual = new Monumento(link_monumento, UTM_north, UTM_east);
@@ -107,6 +111,7 @@ DbMonumentosRestaurantes::DbMonumentosRestaurantes(int MAX_NUM_MONUMENTOS_DEVOLV
           dbMonumentos->add(insertar_ahora, monum_actual);
         }
         ++it_monumentos;
+
     }
 /*
 * Tratamiento de los restaurantes
@@ -125,11 +130,11 @@ DbMonumentosRestaurantes::DbMonumentosRestaurantes(int MAX_NUM_MONUMENTOS_DEVOLV
 * rows=0 para obtener todos los registros
 */
 
-
+  cout<<"Ha llegado hasta aqui"<<endl;
     char URL_RESTAURANTES[500] = "http://www.zaragoza.es/api/recurso/turismo/restaurante?fl=geometry&rf=html&results_only=true&srsname=utm30n&rows=0";
     char path_RESTAURANTES[100] = "restaurantes.json";
 
-   downloader.downloadJSON(URL_RESTAURANTES, path_RESTAURANTES);//descargo los restaurantes
+   //downloader.downloadJSON(URL_RESTAURANTES, path_RESTAURANTES);//descargo los restaurantes
 
 
     std::ifstream fichero_restaurantes(path_RESTAURANTES);

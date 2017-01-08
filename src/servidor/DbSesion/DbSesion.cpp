@@ -5,88 +5,96 @@
 // Coms:
 //*****************************************************************
 
+#include <iostream>
+
+#include "../../librerias/Diccionario/Diccionarios.h"
+#include <list>
 #include "DbSesion.h"
+#include <string>
 
 using namespace std;
 
-void DbSesion::DbSesion() {
-    crear(this->dicc);
-    numero_peticiones_totales = 0;
+void crearSesion(sesion& s) {
+    crear(s.dicc);
 }
 
-void DbSesion::listarCliente(int idCliente, string &listado) {
-    listado.clear();
-    mtx_sesion.lock();//Pillo mutex
-
-    if (pertenece(this->dicc, idCliente)) {
-
-        Lista<string> *pedidos_cliente;
-        obtenerValor(this->dicc, idCliente,
-                     pedidos_cliente); // Obtenemos la lista del cliente en particular al que queremos listar
-        mtx_sesion.unlock();//Suelto mutex
-
-        listado = "Peticiones del cliente " + to_string(idCliente) + ":\n";
-
-        pedidos_cliente->begin();    // Nos posicionamos en el primer pedido
-        string pedido_actual;
-        while (pedidos_cliente->next(
-                pedido_actual)) {    // Listamos todos sus pedidos hasta llegar al final de la lista que los recoge
-            listado = listado + pedido_actual + "\n";
+void listarTodo(sesion& s,string& listado) {
+    listado="";
+    if (!esVacio(s.dicc)) {
+        iniciarIterador(s.dicc);
+        list<string> lAux;
+        listado= "LISTANDO TODO :\n";
+        while (existeSiguiente(s.dicc)) {
+            int nAux;
+            string listadoAux;
+            siguiente(s.dicc, nAux, lAux);
+            listarCliente(s,nAux,listadoAux);
+            listado=listado + listadoAux;
         }
-        listado = listado + "TOTAL PETICIONES DEL CLIENTE: " + to_string(pedidos_cliente->size()) + "\n";
-
-    } else {
-        mtx_sesion.unlock();//Suelto mutex
+        listado= listado + "PETICIONES TOTALES :" + to_string(nPeticionesTotales(s)) +  "\n";
     }
 }
 
-void DbSesion::nuevoPedido(int idCliente, string pedido) {
-    mtx_sesion.lock();
-    // Si el cliente no tiene pedidos lo registramos en el arbol y le añadimos a su lista de pedidos el nuevo pedido
-    if (!pertenece(this->dicc, idCliente)) {
-        Lista<string> *lista_pedidos = new Lista<string>;
-        lista_pedidos->add(pedido);
-        anyadir(this->dicc, idCliente, lista_pedidos);
+void listarCliente(sesion &s,int idCliente,string& listado) {
+    listado="";
+    if (pertenece(s.dicc, idCliente)) {
+        listado="Peticiones del cliente " + to_string(idCliente) + ":\n";
+        list<string> lAux;
+        obtenerValor(s.dicc, idCliente, lAux);
+        if(!lAux.empty()){
+            list<string>::iterator it=lAux.begin();
+            string sAux;
+            while(it!=lAux.end()){
+                sAux=*it;
+                listado = listado + sAux + "\n";
+                it++;
+            }
+            listado= listado + "TOTAL PETICIONES DEL CLIENTE: " + to_string(nPeticionesCliente(s,idCliente)) + "\n";
+        }
     }
-        // En caso contrario extraemos su lista de pedidos del arbol, añadimos el nuevo pedido, y la volvemos a introducir ya dispuesta
+}
+
+void nuevoPedido(int idCliente, string pedido, sesion& s) {
+    list<string> lAux;
+    if (!pertenece(s.dicc, idCliente)) {
+        lAux.push_front(pedido);
+        anyadir(s.dicc, idCliente, lAux);
+    }
     else {
-        Lista<string> *lista_pedidos;
-        obtenerValor(this->dicc, idCliente, lista_pedidos);
-        lista_pedidos->add(pedido);//estoy trabajando directamente sobre el dato almacenado
+        obtenerValor(s.dicc, idCliente, lAux);
+        lAux.push_back(pedido);
+        anyadir(s.dicc, idCliente, lAux);
     }
-    mtx_sesion.unlock();
-
-    mtx_numero_peticiones_totales.lock();
-    this->numero_peticiones_totales = this->numero_peticiones_totales + 1;
-    mtx_numero_peticiones_totales.unlock();
 }
 
-void DbSesion::borrarCliente(int idCliente) {
-    mtx_sesion.lock();
-    if (pertenece(this->dicc, idCliente)) {
-        Lista<string> *dato_a_borrar;
-        obtenerValor(this->dicc, idCliente, dato_a_borrar);
-        quitar(this->dicc, idCliente);
-        delete dato_a_borrar;//llama automaticamente a ~Lista()
-    };
-    mtx_sesion.unlock();
+void borrarCliente(int idCliente, sesion& s) {
+    quitar(s.dicc, idCliente);
 }
 
-int DbSesion::numeroPeticionesCliente(int idCliente) {
-    mtx_sesion.lock();
-    if (!pertenece(this->dicc, idCliente)) {
-        return -1;
-    } else {
-        Lista<string> *lAux;
-        obtenerValor(this->dicc, idCliente, lAux); // Obtenemos la lista de pedidos del cliente idCliente
-        return lAux->size();                    // Devolvemos su longitud, el numero de pedidos
+int nPeticionesCliente(sesion& s, int idCliente){
+    if (!pertenece(s.dicc, idCliente)) {
+        return 0;
     }
-    mtx_sesion.unlock();
+    else{
+        list<string> lAux;
+        obtenerValor(s.dicc,idCliente,lAux);
+        return lAux.size();
+    }
 }
 
-int DbSesion::numeroPeticionesTotales() {
-    mtx_numero_peticiones_totales.lock();
-    int resultado = this->numero_peticiones_totales;
-    mtx_numero_peticiones_totales.unlock();
-    return resultado;
+int nPeticionesTotales(sesion& s){
+    if(!esVacio(s.dicc)){
+        int acum=0;
+        iniciarIterador(s.dicc);
+        list<string> lAux;
+        int idClienteAux;
+        while(existeSiguiente(s.dicc)){
+            siguiente(s.dicc,idClienteAux,lAux);
+            acum=acum+lAux.size();
+        }
+        return acum;
+    }
+    else{
+        return 0;
+    }
 }
