@@ -1,0 +1,5 @@
+	Alumno		NIP
+============================
+Jorge Aznar López 	721556
+Abel Chils Trabanco 	718997
+Daniel Fraile Belmonte 	721525
