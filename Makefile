@@ -4,8 +4,7 @@
 #         Jorge Aznar López
 #         Daniel Fraile Belmonte
 # Date:   enero 2017
-# Coms:   Genera cliente y servidor para el apartado 3 de la pr�ctica 5
-#         Ejecutar como "make"
+# Coms:   Ejecutar como "make"
 #         Para compilar en Hendrix (Solaris OS), descomentar
 #         "#${SOCKETSFLAGS}"
 #*****************************************************************
@@ -36,8 +35,8 @@ GESTORPRECIOS=GestorPrecios
 SERVIDOR=Servidor
 
 #Modulos cliente
-CLIENTEMANUAL=ClienteManual
-CLIENTEAUTOMATICO=ClienteAutomatico
+CLIENTEMANUAL=Clientemanual
+CLIENTEAUTOMATICO=Clienteauto
 
 #Target
 TARGET=${SERVIDOR} ${CLIENTEMANUAL} ${CLIENTEAUTOMATICO}
@@ -85,22 +84,28 @@ ${GESTORPRECIOS}.o: src/servidor/GestorPrecios/${GESTORPRECIOS}.h src/servidor/G
 ${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
 	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
 #-----------------------------------------------------------
-
-# Compilacion de librerias cliente
-${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
-	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
-#-----------------------------------------------------------
-${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
-	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
-#-----------------------------------------------------------
-# PRUEBA_COMPILAR
-# Compilacion
 ${GESTORCONEXIONES}.o: src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorConexiones/${GESTORCONEXIONES}.cpp
 #-----------------------------------------------------------
+
+# Compilacion de librerias cliente
+${CLIENTEMANUAL}.o: src/cliente/${CLIENTEMANUAL}.cpp
+	${CPP} -c $(CPPFLAGS) src/cliente/${CLIENTEMANUAL}.cpp ${LDFLAGS}
+#-----------------------------------------------------------
+${CLIENTEAUTOMATICO}.o: src/cliente/${CLIENTEAUTOMATICO}.cpp
+	${CPP} -c $(CPPFLAGS) src/cliente/${CLIENTEAUTOMATICO}.cpp ${LDFLAGS}
+
+#-----------------------------------------------------------
 # Linkado
-${TARGET}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o ${UTM2LL}.o
-	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o ${UTM2LL}.o -o ${TARGET} ${LDFLAGS} ${SOCKETSFLAGS} #descomentar para Hendrix
+${SERVIDOR}: ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o ${UTM2LL}.o
+	${CPP} ${GESTORCONEXIONES}.o ${DBMONUMENTOSRESTAURANTES}.o ${RESTAURANTE}.o ${MONUMENTO}.o ${JSONDOWNLOAD}.o ${GESTORPRECIOS}.o ${DBSESION}.o ${SOCKET}.o ${SEMAFORO}.o ${UTM2LL}.o -o ${SERVIDOR} ${LDFLAGS} ${SOCKETSFLAGS} #descomentar para Hendrix
+#-----------------------------------------------------------
+# Linkado
+${CLIENTEMANUAL}: ${CLIENTEMANUAL}.o ${SOCKET}.o
+	${CPP} ${CLIENTEMANUAL}.o ${SOCKET}.o -o ${CLIENTEMANUAL} ${LDFLAGS} ${SOCKETSFLAGS}
+#-----------------------------------------------------------
+${CLIENTEAUTOMATICO}: ${CLIENTEAUTOMATICO}.o ${SOCKET}.o
+	${CPP} ${CLIENTEAUTOMATICO}.o ${SOCKET}.o -o ${CLIENTEAUTOMATICO} ${LDFLAGS} ${SOCKETSFLAGS}
 #-----------------------------------------------------------
 
 # LIMPIEZA
@@ -115,4 +120,10 @@ clean:
 	$(RM) ${MONUMENTO}.o
 	$(RM) ${JSONDOWNLOAD}.o
 	$(RM) ${SEMAFORO}.o
-	$(RM) ${TARGET}
+	$(RM) ${GESTORPRECIOS}.o
+	$(RM) ${UTM2LL}.o
+	$(RM) ${CLIENTEMANUAL}.o:
+	$(RM) ${CLIENTEAUTOMATICO}.o:
+	$(RM) ${SERVIDOR}
+	$(RM) ${CLIENTEMANUAL}
+	$(RM) ${CLIENTEAUTOMATICO}
