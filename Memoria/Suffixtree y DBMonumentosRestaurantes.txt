@@ -1,8 +1,0 @@
-Hemos decidido implementar un arbol de sufijos debido a que es una estructura de datos que aunque en memoria tiene un gran costo y en tiempo
-de creacion tambien lo tiene, las busquedas son de orden lineal en la longitud del substring insertado para buscar, lo cual hace que estas 
-sean muy rapidas, que  es lo que se espera de un servidor, ademas de esto las busquedas se pueden realizar desde multiples threads a la vez sin utilizar medios
-de sincronización.
-En este arbol de sufijo he tomado algunas decisiones para mejorar el rendimiento como son almacenar en cada nodo los valores de las claves que empiezen por ese inicio de cadena
-pero para no ocupar memoria innnecesaria he decidido que en un parametro de creacion del arbol se especifique el numero de coincidencias que ha de devolver.
-Entonces en cada nodo guardo un máximo de ese numero de claves, debido a que aunque hayan mas almacenadas no se devolverán.
-Debido a que solamente se ha de devolver el link y las coordenadas de cada clave, esta es la información con la que se trabaja en los modulos Monumentos y Restaurantes.

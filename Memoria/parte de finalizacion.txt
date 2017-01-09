@@ -1,8 +1,0 @@
-La finaizacion se realiza cuando se escribe fin por el terminal.
-Para lograr que acaben los procesos representantes actuales, no entren mas
-y ademas finalize el programa se hace lo siguiente
-Al principio del programa se lanza un thread auxiliar que se encargara de todo esto
-En este thread , primero se llama a cin, la cual bloquea el thread
-Una vez que se ha escrito algo y se desbloquea el thread hace wait hasta que todos los procesos representantes hayan acabado
-En ese momento se cierran los socckets por lo que si el proceso principal está en accept es decir que si desde que se escribio fin
-no ha llegado ningun cliente mas, el accept falle y devuelva -1 por lo que el proceso principal saldrá del bucle y terminará correctamente.
