@@ -1,8 +1,10 @@
 #*****************************************************************
 # File:   Makefile
 # Author: Abel Chils Trabanco
+#         Jorge Aznar LÃ³pez
+#         Daniel Fraile Belmonte
 # Date:   enero 2017
-# Coms:   Genera cliente y servidor para el apartado 3 de la práctica 5
+# Coms:   Genera cliente y servidor para el apartado 3 de la prï¿½ctica 5
 #         Ejecutar como "make"
 #         Para compilar en Hendrix (Solaris OS), descomentar
 #         "#${SOCKETSFLAGS}"
@@ -31,9 +33,14 @@ DBMONUMENTOSRESTAURANTES=DbMonumentosRestaurantes
 DBSESION=DbSesion
 GESTORCONEXIONES=GestorConexiones
 GESTORPRECIOS=GestorPrecios
+SERVIDOR=Servidor
+
+#Modulos cliente
+CLIENTEMANUAL=ClienteManual
+CLIENTEAUTOMATICO=ClienteAutomatico
 
 #Target
-TARGET=main
+TARGET=${SERVIDOR} ${CLIENTEMANUAL} ${CLIENTEAUTOMATICO}
 
 # #################### #
 # FLAGS DE COMPILACION #
@@ -49,8 +56,8 @@ SOCKETSFLAGS=-lsocket -lnsl # Flags linkado sockets (Solaris SunOS)
 
 all: ${TARGET}
 
-# SOCKETS
-# Compilacion libreria de Sockets
+
+# Compilacion de librerias servidor
 ${SOCKET}.o: src/librerias/Socket/${SOCKET}.h src/librerias/Socket/${SOCKET}.cpp
 	${CPP} -c ${CPPFLAGS} src/librerias/Socket/${SOCKET}.cpp
 #-----------------------------------------------------------
@@ -74,6 +81,14 @@ ${DBSESION}.o: src/servidor/DbSesion/${DBSESION}.h src/servidor/DbSesion/${DBSES
 #-----------------------------------------------------------
 ${GESTORPRECIOS}.o: src/servidor/GestorPrecios/${GESTORPRECIOS}.h src/servidor/GestorPrecios/${GESTORPRECIOS}.cpp
 	${CPP} -c ${CPPFLAGS} src/servidor/GestorPrecios/${GESTORPRECIOS}.cpp
+#-----------------------------------------------------------
+${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
+	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
+#-----------------------------------------------------------
+
+# Compilacion de librerias cliente
+${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
+	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
 #-----------------------------------------------------------
 ${UTM2LL}.o: src/librerias/UTM2LL/${UTM2LL}.h src/librerias/UTM2LL/${UTM2LL}.cpp
 	${CPP} -c $(CPPFLAGS) src/librerias/UTM2LL/${UTM2LL}.cpp ${LDFLAGS}
