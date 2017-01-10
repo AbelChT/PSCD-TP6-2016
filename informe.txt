@@ -1,0 +1,39 @@
+Alumno		Horas dedicadas		 				Día		Objetivo de dichas horas
+================================================================================
+Abel		1 (9:30-10:30)						22/12			Diseño del TP6
+			4 (17:00-19:30/21:00-22:30)			24/12			Investigación de maneras eficientes de buscar substrings
+			9 (18-19/14:30-19:30/22:15-23:15)	25-26/12		Uso de JSON y búsqueda de substrings
+			13 (9-13//14-17//6 NO APUNT. CUANDO)27-30/12		Implementación árbol sufijos y lista
+			15 (14-23//13:30-15/15:30-18/20-22)	6-7/1			Revisión gestor conexiones/base de datos de sesión
+			8'5 (16:30-21:30/22:00-01:30)		9/1				Mejoras sufixtree y DbMonumentosRestaurantes
+TOTAL ABEL	50'5 HORAS APROXIMADAMENTE
+================================================================================
+Jorge		1 (12:00-13:00)						22/12			Diseño del TP6
+			2 (17:30-19:30)						26/12			Investigación de diseño del módulo DbSesion
+			3'5 (12:30-13:20/17:19-30)			28/12			Desarrollo de la primera versión del DbSesion
+			1'5	(18:00-19:30)					2/1				Modificar DbSesion, paso de usar AVL(int,historico) a AVL(int,list)
+			1	(11:30-12:30)					3/1				Implementacion nueva funcion para añadir clientes a la DbSesion
+			5'5	(15:30-18/20-22)				7/1				Solución errores punteros y revision de los módulos para v.final
+			5'5	(23:00-04:30)					9/1				Revisión cliente automático y del gestor conexiones, arreglo errores
+TOTAL JORGE 20 HORAS APROXIMADAMENTE
+================================================================================
+Daniel		1'5 (17:00-18:30)					22/12			Diseño del modelo cliente/servidor
+			2	(22:00-00:00)					23/12			Primera version implementacion cliente/servidor
+			2	(15:00-17:00)					24/12			Primeras pruebas cliente/servidor y correciones
+			1	(18:00-19:00)					26/12			Desarrollo version cliente manual
+			1	(17:30-18:30)					27/12			Desarrollo version cliente automatico
+			2	(17:00-19:00)					28/12			Pruebas nuevos clientes separados
+			1'5	(18:00-19:30)					30/12			Primeras pruebas añadiendo modulos externos
+			3	(16:00-19:00)					2/1				Pruebas interaccion cliente manual/servidor con modulos y revisiones
+			4	(NO APUNT. CUANDO)				3-6/1			Incorporacion modulos al cliente autom. pruebas y revisiones
+			2	(20:00-22:00)					7/1				Solución errores punteros
+			5	(15:00-20:00)					8/1				Arreglo errores, nuevas incoporaciones modulos externos, modificaciones, etcétera.
+			5'5	(23:00-04:30)					9/1				Revisión cliente automático y del gestor conexiones, arreglo errores
+TOTAL DANIEL 31'5 HORAS APROXIMADAMENTE
+			
+			
+			
+			
+						
+
+
