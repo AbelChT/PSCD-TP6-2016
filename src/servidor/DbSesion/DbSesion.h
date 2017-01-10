@@ -10,7 +10,6 @@
 
 #include <iostream>
 #include "../../librerias/Diccionario/diccionarios.h"
-#include "../../librerias/Historico/historicos.h"
 #include <list>
 #include <mutex>
 

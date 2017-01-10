@@ -161,64 +161,34 @@ void representante(Socket &socket, int client_fd, DbMonumentosRestaurantes &db_m
         /*
          * Recibo primer mensaje
          */
+	cout << "Escucho primer mensaje de" << id_cliente << endl;
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
             mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
             mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
+	cout << "Mensaje recibido de" << id_cliente << endl;
         if(buffer==MENS_FIN){//El cliente ha decidido finalizar la comunicaci�n
             break;
         }
-
+       Lista<string> parametros_buscar;
         //No se ha decidido finalizar la comunicaci�n
-	/*cout << "Almacenando...." << endl;
-        Almacenar en la lista los par�metros a buscar
-        Lista<string> parametros_buscar;
-        int j = -1;
-    	  int cont = 0;
-    	  int aux;
-    	  for (int i = 0; i < buffer.length(); i++) {
-        	if (buffer[i] == ' ') {
-            		aux = j + 1;
-            		j = i;
-            		parametros_buscar.add(buffer.substr(aux, j - aux));
-            		cont++;
-        	}
-		      else if (i == (buffer.length()) - 1) {
-            		aux = j + 1;
-            		j = i + 1;
-            		parametros_buscar.add(buffer.substr(aux, j - aux));
-        	}
-    	 }*/
-
         //A�ado el pedido a la base de datos
+	cout << "Creo pedido de" << id_cliente << endl;
         nuevoPedido(id_cliente, "Buscar monumento "+buffer,s);
+	cout << "Pedido creado de" << id_cliente << endl;
         //Monumentos para enviar al cliente
         Lista<Monumento *> enviar_al_cliente;
-	db_monumentos_restaurantes.buscarMonumento(buffer, enviar_al_cliente)
-
-
-	  /*Auxiliar para obtener datos de cierto monumento
+	cout << "Busco monumento para" << id_cliente << endl;
+	db_monumentos_restaurantes.buscarMonumento(buffer, enviar_al_cliente);
+	cout << "Monumento encontrado para" << id_cliente << endl;
+	  //Auxiliar para obtener datos de cierto monumento
 	      Monumento * mon_aux;
         //Auxiliar
         Lista<Monumento *> aux_monum;
         parametros_buscar.begin();
-
-        string buscar_esta_iteracion;
-        //Algoritmo de buscar si esta
-        while ((enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)&&parametros_buscar.next(buscar_esta_iteracion)) {
-            db_monumentos_restaurantes.buscarMonumento(buscar_esta_iteracion, aux_monum);
-            aux_monum.begin();
-            Monumento* actual_mirar;
-            while(aux_monum.next(actual_mirar)&&(enviar_al_cliente.size() < NUM_MONUMENTOS_DEVOLVER)){
-                if(!enviar_al_cliente.belongs(actual_mirar)){
-                    enviar_al_cliente.add(actual_mirar);
-                }
-            }
-        }
-	*/
-        //Si la lista est� vac�a (nada encontrado)
+	 //Si la lista est� vac�a (nada encontrado)
         if (enviar_al_cliente.size() == 0) {
             respuesta = "Nada encontrado";
             if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
@@ -241,33 +211,24 @@ void representante(Socket &socket, int client_fd, DbMonumentosRestaurantes &db_m
             }
         }
 
-        /*
-        * Recibo segundo mensaje
-         */
+        
+        //Recibo segundo mensaje
+        
         if (socket.Recv(client_fd, buffer, MESSAGE_SIZE) < 0) {
             mtx_pantalla.lock();
             cerr << "Error al recibir datos: " << strerror(errno) << endl;
             mtx_pantalla.unlock();
             break;//Salgo del bucle
         }
+	cout << "Coordenadas recibidas" << endl;
         if(buffer==MENS_FIN){//El cliente ha decidido finalizar la comunicaci�n
             break;
         }
-	/*char *bufferaux = strdup(buffer.c_str());
-        if(atoi(bufferaux)<1||atoi(bufferaux)>enviar_al_cliente.size()){//La respuesta es no coherente
-            mtx_pantalla.lock();
-            cerr << "La respuesta del cliente no es coherente"<< endl;
-            mtx_pantalla.unlock();
-	    respuesta = "Informacion incorrecta";
-            if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
-            	mtx_pantalla.lock();
-            	cerr << "Error al enviar datos: " << strerror(errno) << endl;
-            	mtx_pantalla.unlock();
-            	break;
-            }
-	   continue;
-        }*/
-        nuevoPedido(client_fd, "Buscar restaurante "+buffer,s);
+	cout << "Transformando a puntero" << endl;
+	char *bufferaux = strdup(buffer.c_str());
+	cout << "Introduciendo pedido rest" << endl;
+        nuevoPedido(id_cliente, "Buscar restaurante "+buffer,s);
+	cout << "Obteniendo id mon" << endl;
         int indmon = atoi(bufferaux);
         double coord_monumento[2];
         enviar_al_cliente.begin();
@@ -277,22 +238,28 @@ void representante(Socket &socket, int client_fd, DbMonumentosRestaurantes &db_m
              }
             indmon--;
         }
+	cout << "Coord obtenidas" << endl;
         double coord_rest[2];
+	cout << "Buscando rest" << endl;
         db_monumentos_restaurantes.buscarRestaurante(coord_monumento[0], coord_monumento[1], coord_rest[0], coord_rest[1]);//suponemos que siempre se carga bien
 	      //Convertimos UTM a Lat, Long
+		cout << "Convirtiendo coord" << endl;
 	      int RefEllipsoid = 23;
 	      double Lat, Long;
 	      char UTMZoneZgza[4] = "30T";
 	      UTMtoLL(RefEllipsoid, coord_rest[0], coord_rest[1], UTMZoneZgza, Lat, Long);
+	
         respuesta = to_string(Lat) +" " + to_string(Long);
-
+	cout << "Coord conv" << respuesta << endl;
         if (socket.Send(client_fd, respuesta) < 0) {//Caso en el que falle el envio del mensaje
                 mtx_pantalla.lock();
                 cerr << "Error al enviar datos: " << strerror(errno) << endl;
                 mtx_pantalla.unlock();
                 break;
         }
+	cout << "Coord enviadas" << endl;
     }
+
 	//Coste del servicio
     int precio_local=gestor_precios.precio(nPeticionesCliente(s,id_cliente));
     respuesta=to_string(precio_local);
@@ -363,6 +330,7 @@ int main(int argc, char *argv[]) {
      * La inicializamos para que devuelva un maximo de 5 monumentos
      */
     DbMonumentosRestaurantes db_monumentos_restaurantes(5);//cargamos los datos de los monumentos y restaurantes
+    cout << "Base de datos cargada" << endl;
     //Marco el fin de servicio como falso
     end_service.store(false);
 

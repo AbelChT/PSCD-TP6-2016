@@ -6,13 +6,12 @@
 //*****************************************************************
 
 #include <iostream>
-
-#include "../../librerias/Diccionario/diccionarios.h"
 #include <list>
 #include "DbSesion.h"
 #include <string>
 
 using namespace std;
+
 
 void crearSesion(sesion& s) {
 	std::unique_lock<std::mutex> lck(s.mtx_sesion);
@@ -21,16 +20,16 @@ void crearSesion(sesion& s) {
 
 void listarTodo(sesion& s,string& listado) {
 	listado="";
-	S.mtx_sesion.lock();
+	s.mtx_sesion.lock();
 	if (!esVacio(s.dicc)) {
 		iniciarIterador(s.dicc);
-		list<string> *lAux;
+		list<string> *lAux=new list<string>;
 		listado= "LISTANDO TODO :\n";
 		while (existeSiguiente(s.dicc)) {
 			int nAux;
 			string listadoAux;
 			siguiente(s.dicc, nAux, lAux);
-			S.mtx_sesion.unlock();
+			s.mtx_sesion.unlock();
 			listarCliente(s,nAux,listadoAux);
 			listado=listado + listadoAux;
 		}
@@ -40,12 +39,12 @@ void listarTodo(sesion& s,string& listado) {
 
 void listarCliente(sesion &s,int idCliente,string& listado) {
 	listado="";
-	S.mtx_sesion.lock();
+	s.mtx_sesion.lock();
 	if (pertenece(s.dicc, idCliente)) {
 		listado="Peticiones del cliente " + to_string(idCliente) + ":\n";
-		list<string> *lAux;
+		list<string> *lAux=new list<string>;
 		obtenerValor(s.dicc, idCliente, lAux);
-		S.mtx_sesion.unlock();
+		s.mtx_sesion.unlock();
 		if(!lAux->empty()){
 			list<string>::iterator it=lAux->begin();
 			string sAux;
@@ -61,7 +60,7 @@ void listarCliente(sesion &s,int idCliente,string& listado) {
 
 void nuevoPedido(int idCliente, string pedido, sesion& s) {
 	std::unique_lock<std::mutex> lck(s.mtx_sesion);
-	list<string> *lAux;
+	list<string> *lAux=new list<string>;
 	if (!pertenece(s.dicc, idCliente)) {
 		lAux->push_front(pedido);
 		anyadir(s.dicc, idCliente, lAux);
@@ -76,7 +75,7 @@ void nuevoPedido(int idCliente, string pedido, sesion& s) {
 void borrarCliente(int idCliente, sesion& s) {
 	std::unique_lock<std::mutex> lck(s.mtx_sesion);
     if (pertenece(s.dicc, idCliente)) {
-        list<string> *dato_a_borrar;
+        list<string> *dato_a_borrar=new list<string>;
         obtenerValor(s.dicc, idCliente, dato_a_borrar);
         quitar(s.dicc, idCliente);
         delete dato_a_borrar;
@@ -89,7 +88,7 @@ int nPeticionesCliente(sesion& s, int idCliente){
 		return 0;
 	}
 	else{
-		list<string> *lAux;
+		list<string> *lAux=new list<string>;
 		obtenerValor(s.dicc,idCliente,lAux);
 		return lAux->size();
 	}
@@ -100,7 +99,7 @@ int nPeticionesTotales(sesion& s){
 	if(!esVacio(s.dicc)){
 		int acum=0;
 		iniciarIterador(s.dicc);
-		list<string> *lAux;
+		list<string> *lAux=new list<string>;
 		int idClienteAux;
 		while(existeSiguiente(s.dicc)){
 			siguiente(s.dicc,idClienteAux,lAux);

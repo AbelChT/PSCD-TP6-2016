@@ -35,7 +35,7 @@ int troceaFormatea(string message, string p[]) {
             p[cont] = message.substr(aux, j - aux);
         }
     }
-    return cont-1;
+    return cont+1;
 }
 
 
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
       int nParametros;
 
       //Número de monumentos recibidos como respuesta
-      int nMon;
+      int nMon=0;
 
       //Valor auxiliar que utilizaremos para elegir una respuesta de forma aleatoria
 
@@ -146,13 +146,13 @@ int main(int argc, char *argv[]) {
 			 continue;
 		}
 		if (mensaje==MENS_FIN){
-			cout << buffer << endl;
+			cout << "Coste del servicio: " << buffer << endl;
+
                 	socket.Close(socket_fd);
                 	return 0;
        		}
            	else {
 			  string p[5];
-			  int nMon;
 			  troceaFormatea(buffer, p);
         		  for (int n=0; n<5; ++n){
 		          	if (p[n].length()!=0){
@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
 					cout << p[n] << endl;
                 			string ABRIRURL="gnome-open "+ p[n];
                 			system((ABRIRURL).data());
-					//sleep(5); //Evitar que Xming se sature
+					sleep(5); //Evitar que Xming se sature
               			}
         		  }
 		}
@@ -170,18 +170,19 @@ int main(int argc, char *argv[]) {
                 cout << "Finalizar ('Fin') o mostrar restaurante ('N�mero del restaurante [1-5]'): ";
                 getline(cin, mensaje);
 		char *msgaux = strdup(mensaje.c_str());
-	       while(atoi(msgaux)<1||atoi(msgaux)>nMon||!es_numero(mensaje)){//La respuesta es no coherente
+	       while((atoi(msgaux)<1||atoi(msgaux)>nMon||!es_numero(mensaje))&&mensaje!=MENS_FIN){//La respuesta es no coherente
             		cout << "Informacion no valida" << endl;
            		cout << "Finalizar ('Fin') o mostrar restaurante ('N�mero del restaurante [1-5]'): " << endl;
-                	getline(cin, mensaje);
+                	getline(cin, mensaje);    
+			msgaux = strdup(mensaje.c_str()); 
 		}
                 if (enviarMensaje(socket_fd, mensaje, socket)==-1) return -1;
                 if (recibirMensaje(socket_fd, buffer, socket)==-1) return -1;
-                if(mensaje==MENS_FIN) {
-                    cout << buffer << endl;
-                    socket.Close(socket_fd);
-                    return 0;
-                }
+		if(mensaje==MENS_FIN) {
+                    		cout << "Coste del servicio: " << buffer << endl;
+                    		socket.Close(socket_fd);
+                    		return 0;
+		}
                else {
             string coord[2];
             troceaFormatea(buffer, coord);

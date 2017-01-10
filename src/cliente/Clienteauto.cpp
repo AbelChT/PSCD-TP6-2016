@@ -26,12 +26,12 @@ void gen_random(string &msg) {
     int len=4;
     char s[len];
     static const char cons[] =
-            "BCDFGHJKLMNPQRSTVWXYZbcdfghjklmnpqrstvwxyz";
+            "bcdfghjklmnpqrstvwxyz";
     static const char voc[] =
-            "AEIOUaeiou";
-    s[0] = cons[rand() % (sizeof(cons) - 1)];
-    s[1] = voc[rand() % (sizeof(cons) - 1)];
-    s[2] = cons[rand() % (sizeof(cons) - 1)];
+            "aeiou";
+    s[0] = cons[rand() % (20)];
+    s[1] = voc[rand() % (5)];
+    s[2] = cons[rand() % (20)];
     s[len] = 0;
     msg=s;
 }
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
       string buffer;
 
       //Array en el que almacenaremos la respuesta formateada del servidor
-		  string p[5];
+	string p[5];
 
       //Número de parámetros de búsqueda enviados al servidor
       int nParametros;
@@ -147,24 +147,25 @@ int main(int argc, char *argv[]) {
 
 /*Solicitud inicial
 **********************************************************************/
-          nParametros=rand() % 5 +1;
-		mensaje.clear();
+	mensaje.clear();
+          /*nParametros=rand() % 5 +1;
+
 	        for (int i=0; i<nParametros; ++i){
                 gen_random(mensaje_aux);
 		            mensaje=mensaje+ " " + mensaje_aux;
 				sleep(1);
-          }
-
+          }*/
+	
+	mensaje="Goya";
           //PRUEBAS Comprobacion del mensaje a enviar PRUEBAS
-          cout << "Mensaje enviado: " << mensaje << endl;
+          cout << "Mensaje enviado1: " << mensaje << endl;
 
           if (enviarMensaje(socket_fd, mensaje, socket)==-1) return -1;
           if (recibirMensaje(socket_fd, buffer, socket)==-1) return -1;
-
+	cout << "Mensaje recibido1: " << buffer << endl;
           //Si no se encuentra un monumento se nos da la opción de seguir preguntando
 		        while (buffer=="Nada encontrado"){
-              			 cout << buffer << endl;
-				sleep(3);
+              			 cout << buffer << endl;	
 				mensaje.clear();
 			          nParametros=rand() % 5 +1;
 			          for (int i=0; i<nParametros; ++i){
@@ -174,17 +175,17 @@ int main(int argc, char *argv[]) {
 			          }
 
        		      //PRUEBAS Comprobacion del mensaje a enviar PRUEBAS
-         	      cout << "Mensaje enviado: " << mensaje << endl;
+         	      cout << "Mensaje enviado2: " << mensaje << endl;
         	      if (enviarMensaje(socket_fd, mensaje, socket)==-1) return -1;
        		      if (recibirMensaje(socket_fd, buffer, socket)==-1) return -1;
-			}
+			sleep(5);
             }
           //Si hemos enviado el mensaje de finalización recibiremos el precio que
           //pasaremos a mostrar por pantalla
-			    if (mensaje==MENS_FIN){
-				        cout << "Precio del servicio: " << buffer << endl;
-                socket.Close(socket_fd);
-                return 0;
+		if (mensaje==MENS_FIN){
+			cout << "Precio del servicio: " << buffer << endl;
+                	socket.Close(socket_fd);
+                	return 0;
        		}
 
           //En otro caso habremos recibido las url de los monumentos, las mostramos por
@@ -197,9 +198,8 @@ int main(int argc, char *argv[]) {
 				                cout << p[n] << endl;
                 		    string ABRIRURL="gnome-open "+ buffer;
                 		    system((ABRIRURL).data());
-					sleep(2);
+					sleep(5);
               		}
-        	      }
 	        }
 
 
@@ -259,3 +259,5 @@ int main(int argc, char *argv[]) {
 			               return 0;
 		      }
     }
+}
+}
