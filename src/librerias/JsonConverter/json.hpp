@@ -1,7 +1,4 @@
 /******************************************************************
-* Author: Abel Chils Trabanco
-*         Jorge Aznar López
-*         Daniel Fraile Belmonte
 * Date: 2 de enero de 2017
 * Coms: Biblioteca obtenida del proyecto JSON for Modern C++
 ******************************************************************/
